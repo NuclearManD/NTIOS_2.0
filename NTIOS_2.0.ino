@@ -28,7 +28,7 @@ void loop() {
   gr.run();
   if(gr.processes==0){
     vga.clear();
-    vga.println("Computer has crashed:\n  No more running processes.\n  Any key to reset arduino.");
+    vga.println(F("Computer has crashed:\n  No more running processes.\n  Any key to reset arduino."));
     while(kbd.available())kbd.read();
     while(!kbd.available());
     reset();
@@ -55,7 +55,7 @@ void shell_fup(){
       window(0,1,15,6);
       vga.set_color(2);
       vga.set_cursor_pos(0,1);
-      vga.print("OPEN PROGRAM:");
+      vga.print(F("OPEN PROGRAM:"));
       vga.set_cursor_pos(1,2);
       vga.set_color(3);
       vga.print(apps[0]);
@@ -161,7 +161,7 @@ void taskfu(){
   }
   vga.set_color(3);
   vga.set_cursor_pos(18,1+gr.processes);
-  vga.print("Free RAM : ");
+  vga.print(F("Free RAM : "));
   vga.print(String(freeRam()));
   last_task_time=millis()+1000;
   last_task_count=gr.processes;
@@ -201,13 +201,13 @@ void taskupd(){
 char* term_cmd="";
 unsigned short term_cnt=0;
 void term_print(char* d){
-  vga.set_color(3);
-  print(d);
+  vga.set_color(1);
+  vga.print(d);
   vga.set_color(2);
 }
 void term_error(char* d){
   vga.set_color(2);
-  print(d);
+  vga.print(d);
 }
 void term(){
   if(!okcancel("CMD needs to stop GEAR.")){
@@ -217,26 +217,32 @@ void term(){
     stdo=term_print;
     stde=term_error;
     term_cmd=Nalloc(128);
-    println("Terminal Started.\nLeave with 'exit -L'");
+    vga.set_cursor_pos(0,0);
+    vga.clear();
+    vga.set_color(1);
+    vga.println(F("Terminal Started.\nLeave with 'exit -L'"));
+    vga.print("> ");
   }
   while(true){
-    if(available()){
-      uint16_t c=kbd.read();
-      if(c=='\n'||c=='\r'){
+    if(kbd.available()){
+      char c=kbd.read();
+      if((c=='\n')||(c=='\r')){
+        term_cmd[term_cnt]=0;
         if(!strcmp(term_cmd,"exit -L"))
           break;
+        vga.print('\r');
         system(term_cmd);
-        term_cmd[0]=0;
+        vga.set_color(1);
         term_cnt=0;
-        print("> ");
+        vga.print("> ");
       }else{
         term_cmd[term_cnt]=c;
         term_cnt++;
-        print(c);
+        vga.print(c);
       }
     }
   }
-  gr.kill(gr.cprocess);// stop
+  gr.kill(gr.processes-1);// stop
   gear_stopwait();// fix GEAR
 }
 

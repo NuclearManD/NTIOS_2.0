@@ -7,14 +7,8 @@
 #include <NMT_GFX.h>
 #include <GEAR.h>
 #include <PS2Keyboard.h>
-/*#define PS2_TAB        0x11D
-#define PS2_ENTER      0x11E
-#define PS2_DOWNARROW  0x118
-#define PS2_UPARROW    0x117
-#define PS2_LEFTARROW  0x116 // this is all for PS2KeyAdvanced
-#define PS2_RIGHTARROW 0x115
-#define PS2_ESC        0x11B
-#define PS2_DEL        0x11A*/
+#include <SPI.h>
+#include <SD.h>
 #define system Nsystem
 GearControl gr;
 byte data = 0;
@@ -26,7 +20,7 @@ bool term_opn=false;
 byte term_y, term_x=0;
 byte gui=0;
 byte sel_process=0;
-bool __redraw[40];
+bool* __redraw;
 void (*reset)()=0;
 void term_close(){
   term_opn=false;
@@ -46,18 +40,6 @@ uint16_t read(){
     return 0;
   }
 }
-/*char read_natural(){
-  uint16_t c=read();
-  if(c==PS2_ENTER)
-    return '\n';
-  else if(c==PS2_TAB)
-    return '\t';
-  if(!shift_key){
-    if(((c&0xFF)>0x40)&&((c&0xFF)<0x5B))
-      return c+0x20;
-  }
-  return c;
-}*/
 bool available(){
   return (gr.cprocess==sel_process)&&(last_key>0);
 }
@@ -268,7 +250,6 @@ void Nsystem(char* inp){
         stde(String(res).c_str());
       }
     }
-    stde("\n");
   }else if(!strcmp(args[0],"lsps")){
     stdo(String(gr.processes).c_str());
     stdo(" Processes:");
@@ -276,22 +257,58 @@ void Nsystem(char* inp){
       stdo("\n :");
       stdo((String(i)+gr.getName(i)).c_str());
     }
-    stdo("\n");
   }else if(!strcmp(args[0],"sudo")){
     gr.p_perms[gr.cprocess]=0xFF;
     if(!strcmp(args[1],"-f")){
       term_force=true;
       stdo("Self-hacking ENABLED\n");
     }
-    stdo("Gained all privleges.\n");
+    stdo("Gained all privleges.");
+  }else if(!strcmp(args[0],"cls")){
+    vga.set_cursor_pos(0,0);
+    vga.clear();
+    return; // escape newline
+  }else if(!strcmp(args[0],"lsdev")){
+    // list devices
+    stdo(" 0 PS2 Keyboard\n 1 ");
+    stdo(vga.get_card_ver());
+    stdo("\n 2 RAM_32K\n 3 SD card");
+  }else if(!strcmp(args[0],"mem")){
+    stdo("RAM bytes free: ");
+    stdo(String(freeRam()).c_str());
+    stdo("\nDev2 bytes free: ");
+    stdo(String(Nfree()).c_str());
+  }else if(!strcmp(args[0],"do")){
+    if(cnt<3){
+      stde("Usage: do (dev id) (func) [args...]");
+    }else{
+      byte dev=to_int(args[1]);
+      if(dev==0)
+        stde("This device hasn't any functions.");
+      else if(dev==1){
+        if(!strcmp(args[2],"cls"))
+          vga.clear();
+        else if(!strcmp(args[2],"reset"))
+          stde("Not yet implimented.");
+        else
+          stde("Function non existent.");
+      }else if(dev==2){
+        if(!strcmp(args[2],"dealloc")){
+          our_heap=0x8000;
+          if(cnt>=4){
+            our_heap-=to_int(args[1]);
+          }
+          stdo("Bytes free: ");
+          stdo(String(Nfree()).c_str());
+        }else
+          stde("Function non existent.");
+      }
+    }
   }else{
     stde("Not a command:");
-    stde(String((int)args[0],HEX).c_str());
-    stde(String(len(inp)+1,HEX).c_str());
-    
-    stde("\n");
-    
+    stde(args[0]);
   }
+  stdo("\n");
 }
 void k_init() {
   // init kernel
@@ -299,6 +316,7 @@ void k_init() {
   bitSet(XMCRB, XMM0); // release unused pin PC7
   bitClear(XMCRA, SRW10);
   bitClear(XMCRA, SRW11);
+  __redraw=(bool*)Nalloc(40);
   vga.begin();
   kbd.begin(A15, 3);
 }
