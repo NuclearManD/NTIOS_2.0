@@ -26,6 +26,33 @@ void term_close(){
   term_opn=false;
   term_y=0;
 }
+int freeRam() {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+unsigned short len(char* d){
+  unsigned short i=0;
+  while(d[i]!=0)
+    i++;
+  return i;
+}
+unsigned short our_heap=0x8000;
+char* Nalloc(unsigned short length){
+  unsigned short tmp=our_heap;
+  our_heap+=length;
+  return (char*)tmp;
+}
+int Nfree(){
+  return 0x10000-our_heap;
+}
+int to_int(char* str){
+  int out=0;
+  for(byte i=0;i<len(str);i++){
+    out+=pow(10,i)*(str[i]-'0');
+  }
+  return out;
+}
 void sw_gui(byte q){
   gui=q;
   for(byte i=0;i<40;i++)
@@ -126,16 +153,25 @@ bool okcancel(const char* q){
   gear_stopwait();
   return sel;
 }
-int freeRam() {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+bool sd_mounted=false;
+bool mount(){
+  sd_mounted=SD.begin(4);
+  return sd_mounted;
 }
-unsigned short len(char* d){
-  unsigned short i=0;
-  while(d[i]!=0)
-    i++;
-  return i;
+File open(char* name,byte access){
+  return SD.open(name,access);
+}
+char* read(int* size, char* name){
+  File f=SD.open(name);
+  if(f){
+    size[0]=f.size();
+    char* ptr=Nalloc(size[0]);
+    f.read(ptr, size[0]);
+    f.close();
+    return ptr;
+  }else
+    size[0]=-1;
+  return 8192;// 8192 is position of null-memory space.  Can't hurt memory that doesn't exist.
 }
 void println(const char* q){
   if(term_opn==false){
@@ -189,22 +225,6 @@ void print(char q){
       vga.print(q);
   }else
     term_y++;
-}
-unsigned short our_heap=0x8000;
-char* Nalloc(unsigned short length){
-  unsigned short tmp=our_heap;
-  our_heap+=length;
-  return (char*)tmp;
-}
-int Nfree(){
-  return 0x10000-our_heap;
-}
-int to_int(char* str){
-  int out=0;
-  for(byte i=0;i<len(str);i++){
-    out+=pow(10,i)*(str[i]-'0');
-  }
-  return out;
 }
 void noprnt(char* x){}
 void (*stdo)(char*)=noprnt;
@@ -264,6 +284,11 @@ void Nsystem(char* inp){
       stdo("Self-hacking ENABLED\n");
     }
     stdo("Gained all privleges.");
+  }else if(!strcmp(args[0],"mount")){
+    if(mount())
+      stdo("Success.");
+    else
+      stde("Unknown Error.");
   }else if(!strcmp(args[0],"cls")){
     vga.set_cursor_pos(0,0);
     vga.clear();
@@ -272,7 +297,10 @@ void Nsystem(char* inp){
     // list devices
     stdo(" 0 PS2 Keyboard\n 1 ");
     stdo(vga.get_card_ver());
-    stdo("\n 2 RAM_32K\n 3 SD card");
+    stdo("\n 2 RAM_32K");
+    if(sd_mounted){
+      stdo("\n 3 SD card");
+    }
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
@@ -319,5 +347,6 @@ void k_init() {
   __redraw=(bool*)Nalloc(40);
   vga.begin();
   kbd.begin(A15, 3);
+  mount();
 }
 
