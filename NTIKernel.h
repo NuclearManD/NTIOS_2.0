@@ -155,6 +155,9 @@ bool okcancel(const char* q){
 }
 bool sd_mounted=false;
 bool mount(){
+  pinMode(53, OUTPUT);
+  pinMode(52, OUTPUT);
+  pinMode(54, OUTPUT);
   sd_mounted=SD.begin(4);
   return sd_mounted;
 }
