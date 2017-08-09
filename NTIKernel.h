@@ -234,6 +234,7 @@ void (*stdo)(char*)=noprnt;
 void (*stde)(char*)=noprnt;
 bool term_force=false;
 void Nsystem(char* inp){
+  unsigned short eptr=our_heap;
   char* args[10];
   byte cnt=1;
   char* src=Nalloc(len(inp)+1);
@@ -301,9 +302,7 @@ void Nsystem(char* inp){
     stdo(" 0 PS2 Keyboard\n 1 ");
     stdo(vga.get_card_ver());
     stdo("\n 2 RAM_32K");
-    if(sd_mounted){
-      stdo("\n 3 SD card");
-    }
+    stdo("\n 3 SD card");
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
@@ -333,13 +332,24 @@ void Nsystem(char* inp){
           stdo(String(Nfree()).c_str());
         }else
           stde("Function non existent.");
+      }else if(dev==3){
+        /*if(!strcmp(args[2],"mount")){
+          if(mount()){
+            
+          }
+        }else
+          stde("Function non existent.");*/
       }
     }
+  }else if(!strcmp(args[0],"help")){
+    stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
+    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list");
   }else{
     stde("Not a command:");
     stde(args[0]);
   }
   stdo("\n");
+  our_heap=eptr;
 }
 void k_init() {
   // init kernel

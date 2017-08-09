@@ -43,10 +43,10 @@ void loop() {
   }
 }
 bool dir=false;
-String apps[5]=   {"TaskMan" ,"reboot", "cmd"};
-void (*upd[5])()= {taskupd   ,__empty , __empty};
-void (*fupd[5])()={taskfu    ,__empty , __empty};
-void (*stp[5])()= {__empty   ,0       , term};//,__q,__q,__q};
+String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface"};
+void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd};
+void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup};
+void (*stp[5])()= {__empty   ,0       , term,   cp_strt};//,__q,__q,__q};
 byte napps=3;
 void shell_fup(){
   if(sel_process==0){
@@ -235,6 +235,9 @@ void term(){
         vga.set_color(1);
         term_cnt=0;
         vga.print("> ");
+      }else if(c==PS2_BACKSPACE){
+        vga.print(c);
+        term_cnt--;
       }else{
         term_cmd[term_cnt]=c;
         term_cnt++;
