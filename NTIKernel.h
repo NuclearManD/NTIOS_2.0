@@ -60,9 +60,9 @@ void sw_gui(byte q){
   for(byte i=0;i<40;i++)
     __redraw[i]=true;
 }
-uint16_t last_key=0;
+char last_key=0;
 bool shift_key=false;
-uint16_t read(){
+char read(){
   if(gr.cprocess==sel_process)
     return last_key;
   else{
@@ -70,7 +70,7 @@ uint16_t read(){
   }
 }
 bool available(){
-  return (gr.cprocess==sel_process)&&(last_key>0);
+  return (gr.cprocess==sel_process)&&(last_key!=0);
 }
 int launch(void (*a)(),void (*b)(),char* name="?", void (*c)()=__empty){
   //if(gr.cprocess==sel_process)

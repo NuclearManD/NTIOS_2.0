@@ -24,6 +24,7 @@ void setup() {
   system("lsps");
   system("terminate 0");
   while(true);*/
+  randomSeed(millis());
 }
 
 void loop() {
@@ -37,6 +38,7 @@ void loop() {
   }
   if(kbd.available()){
     last_key=kbd.read();
+    randomSeed(millis()*last_key);
   }else
     last_key=0;
   if(sel_process>=gr.processes){
@@ -49,7 +51,7 @@ String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface"};
 void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd};
 void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup};
 void (*stp[5])()= {__empty   ,0       , term,   cp_strt};//,__q,__q,__q};
-byte napps=3;
+byte napps=5;
 void shell_fup(){
   if(sel_process==0){
     if(redraw){
@@ -78,7 +80,7 @@ void shell_fup(){
 void shell_upd(){
   if(sel_process==0){  // Program Opener
     if(available()){
-      uint16_t c=read();
+      char c=read();
       byte q=selected;
       if(c==PS2_DOWNARROW){
         selected++;
@@ -171,7 +173,7 @@ void taskfu(){
 void taskupd(){
   byte q=task_sel;
   if(available()){
-    uint16_t c=read();
+    char c=read();
     if(c==PS2_DOWNARROW){
       task_sel++;
     }else if(c==PS2_UPARROW){
@@ -199,6 +201,99 @@ void taskupd(){
     last_task_time=0; // Allow next call to work...
     taskfu();         // Redraw graphics
   }
+}
+Sprite face;
+long cp_score=65025;
+bool alloc_face=false;
+long cp_time;
+int cpx=50;
+int cpy=50;
+int cpex, cpey;
+void cp_strt(){
+  cp_score=65025;
+  if(!alloc_face){
+    cpex=random(10,100);
+    cpex=random(10,80);
+    alloc_face=true;
+    face.binary_image=Nalloc(20);
+    face.set_size(8,8);
+    face.set_center(4,4);
+    face.fill(0);
+    face.pixel(2,2,1);
+    face.pixel(5,2,1);
+    face.pixel(2,5,1);  // this is the exact same sprite from
+    face.pixel(5,5,1);  // the old NuclearGames CreeperFace
+    face.pixel(3,4,1);  // game.  Good game, glad I didn't
+    face.pixel(4,4,1);  // loose it.  Now I make it again :D
+    face.upload();
+  }
+  cp_time=millis();
+}
+void cp_end(){
+  cpex=random(10,100);
+  cpex=random(10,80);
+  cp_score=65025;
+  gr.kill(gr.cprocess);
+}
+void cp_upd(){
+  if(available()){
+    char c = read();
+    // check for some of the special keys
+    if (c == PS2_LEFTARROW) {
+      cpx=cpx-2;
+    } else if (c == PS2_RIGHTARROW) {
+      cpx=cpx+2;
+    } else if (c == PS2_UPARROW) {
+      cpy=cpy-2;
+    } else if (c == PS2_DOWNARROW) {
+      cpy=cpy+2;
+    }
+  }
+  cp_score=cp_score-(millis()-cp_time);
+  cp_time=millis();
+  if (cpx==cpex && cpy==cpey){
+    alert(("You win! Score: "+String(cp_score)).c_str());
+    cp_end();
+  }
+  if(cp_score<0){
+    alert("You failed.  GG.");
+    cp_end();
+  }
+}
+void cp_fup(){
+  gr.ftimes[gr.cprocess]=millis()+200;
+  cpex=(cpex+random(0,5))-2;
+  cpey=(cpey+random(0,5))-2;
+  if(cpex>120){
+    cpex=cpex-5;
+  }
+  if(cpex<0){
+    cpex=cpex+5;
+  }
+  if(cpey>90){
+    cpey=cpey-5;
+  }
+  if(cpey<0){
+    cpey=cpey+5;
+  }
+  if(cpx>120){
+    cpx=cpx-5;
+  }
+  if(cpx<0){
+    cpx=cpx+5;
+  }
+  if(cpy>90){
+    cpy=cpy-5;
+  }
+  if(cpy<0){
+    cpy=cpy+5;
+  }
+  vga.clear();
+  //vga.set_color(0);
+  //vga.fill_box(max(0,cpx-4), max(0,cpy-4), cpx+4, cpy+4);
+  //vga.fill_box(max(0,cpex-4), max(0,cpey-4), cpex+4, cpey+4);
+  face.display(cpx,cpy,0);
+  face.display(cpex,cpey,0);
 }
 char* term_cmd="";
 unsigned short term_cnt=0;
