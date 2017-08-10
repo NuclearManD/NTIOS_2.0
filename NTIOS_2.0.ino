@@ -230,8 +230,8 @@ void cp_strt(){
   cp_time=millis();
 }
 void cp_end(){
-  cpex=random(10,100);
-  cpex=random(10,80);
+  cpex=random(10,cols-10);
+  cpex=random(10,rows-10);
   cp_score=65025;
   gr.kill(gr.cprocess);
 }
@@ -264,25 +264,25 @@ void cp_fup(){
   gr.ftimes[gr.cprocess]=millis()+200;
   cpex=(cpex+random(0,5))-2;
   cpey=(cpey+random(0,5))-2;
-  if(cpex>120){
+  if(cpex>cols){
     cpex=cpex-5;
   }
   if(cpex<0){
     cpex=cpex+5;
   }
-  if(cpey>90){
+  if(cpey>rows){
     cpey=cpey-5;
   }
   if(cpey<0){
     cpey=cpey+5;
   }
-  if(cpx>120){
+  if(cpx>cols){
     cpx=cpx-5;
   }
   if(cpx<0){
     cpx=cpx+5;
   }
-  if(cpy>90){
+  if(cpy>rows){
     cpy=cpy-5;
   }
   if(cpy<0){

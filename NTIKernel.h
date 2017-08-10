@@ -24,6 +24,7 @@ byte gui=0;
 byte sel_process=0;
 bool* __redraw;
 void (*reset)()=0;
+int rows, cols;
 void term_close(){
   term_opn=false;
   term_y=0;
@@ -363,5 +364,7 @@ void k_init() {
   vga.begin();
   kbd.begin(A15, 3);
   mount();
+  rows=vga.y_tiles()*16;
+  cols=vga.x_tiles()*16;
 }
 
