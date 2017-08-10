@@ -1,3 +1,5 @@
+#pragma GCC diagnostic warning "-fpermissive"
+//#pragma GCC diagnostic warning "-pedantic"
 #include "NTIKernel.h"
 void setup() {
   // put your setup code here, to run once:

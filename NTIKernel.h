@@ -1,3 +1,5 @@
+#pragma GCC diagnostic warning "-fpermissive"
+//#pragma GCC diagnostic warning "-pedantic"
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h" // for attachInterrupt, FALLING
 #else
@@ -174,7 +176,7 @@ char* read(int* size, char* name){
     return ptr;
   }else
     size[0]=-1;
-  return 8192;// 8192 is position of null-memory space.  Can't hurt memory that doesn't exist.
+  return (char*)8192;// 8192 is position of null-memory space.  Can't hurt memory that doesn't exist.
 }
 void println(const char* q){
   if(term_opn==false){
