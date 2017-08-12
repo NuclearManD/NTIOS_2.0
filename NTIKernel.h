@@ -11,6 +11,7 @@
 #include <PS2Keyboard.h>
 #include <SPI.h>
 #include <SD.h>
+int rows, cols;
 #include "Cyrillic.h"
 #define system Nsystem
 GearControl gr;
@@ -25,7 +26,6 @@ byte gui=0;
 byte sel_process=0;
 bool* __redraw;
 void (*reset)()=0;
-int rows, cols;
 void term_close(){
   term_opn=false;
   term_y=0;
@@ -379,36 +379,22 @@ void k_init() {
   mount();
   rows=vga.y_tiles()*16;
   cols=vga.x_tiles()*16;
-  int x=0;
-  int y=0;
   for(byte i=0;i<33;i++){
-    cyrillic_wchr(x,y,i);
-    x+=8;
-    if(x>=cols){
-      x=0;
-      y+=8;
-    }
+    alph_wchr(i);
   }
-  y+=16;
-  x=0;
-  for(byte i=0;i<33;i++){
-    cyrillic_wchr(x,y,i+33);
-    x+=8;
-    if(x>=cols){
-      x=0;
-      y+=8;
-    }
+  alph_nl();
+  alph_nl();
+  for(byte i=33;i<66;i++){
+    alph_wchr(i);
   }
-  y+=16;
-  x=0;
-  for(byte i=0;i<27;i++){
-    cyrillic_wchr(x,y,i+66);
-    x+=8;
-    if(x>=cols){
-      x=0;
-      y+=8;
-    }
-  }
+  alph_nl();
+  alph_wchr(4);
+  alph_wchr(42);
+  alph_wchr(46);
+  alph_wchr(33);
   while(true);
+  for(byte i=66;i<92;i++){
+    alph_wchr(i);
+  }
 }
 

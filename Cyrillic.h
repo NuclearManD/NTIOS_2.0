@@ -895,7 +895,7 @@ const PROGMEM byte cyrillic [ALPH_LENGTH][8]= {
     0x05
   },
   {
-    0b10101,
+    0b10001,
     0b01010,
     0b00100,
     0b01010,
@@ -948,7 +948,23 @@ void load_cyrillic_alphabet(){
     cyrillic_sprites[i].upload();
   }
 }
-void cyrillic_wchr(short x, short y, byte c){
-  cyrillic_sprites[c].display(x, y, 0);
+unsigned short alph_x=0;
+unsigned short alph_y=0;
+byte lang=0;
+void alph_nl(){
+  alph_y+=8;
+  alph_x=0;
+}
+void alph_wchr(byte c){
+  byte adv=0;
+  if(c<ALPH_LENGTH){
+    cyrillic_sprites[c].display(alph_x, alph_y, 0);
+    adv=pgm_read_byte(&(cyrillic[c][7]))+1;
+  }else
+    adv=5;
+  alph_x+=adv;
+  if(alph_x>cols){
+    alph_nl();
+  }
 }
 
