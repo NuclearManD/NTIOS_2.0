@@ -11,6 +11,7 @@
 #include <PS2Keyboard.h>
 #include <SPI.h>
 #include <SD.h>
+#include "Cyrillic.h"
 #define system Nsystem
 GearControl gr;
 byte data = 0;
@@ -41,13 +42,25 @@ unsigned short len(char* d){
   return i;
 }
 unsigned short our_heap=0x8000;
+unsigned short* dev2mem=(unsigned short*)0x8000;
+unsigned short our_stack=0x7FFF;
 char* Nalloc(unsigned short length){
   unsigned short tmp=our_heap;
   our_heap+=length;
+  our_stack-=2;
+  dev2mem[our_stack]=tmp;
   return (char*)tmp;
 }
+void Ndealloc(){
+  if(our_stack>=0x7FFE){
+    our_heap=0x8000;
+    return;
+  }
+  our_heap=dev2mem[our_stack];
+  our_stack+=2;
+}
 int Nfree(){
-  return 0x10000-our_heap;
+  return our_stack-(our_heap-0x8000)+1;
 }
 int to_int(char* str){
   int out=0;
@@ -237,7 +250,6 @@ void (*stdo)(char*)=noprnt;
 void (*stde)(char*)=noprnt;
 bool term_force=false;
 void Nsystem(char* inp){
-  unsigned short eptr=our_heap;
   char* args[10];
   byte cnt=1;
   char* src=Nalloc(len(inp)+1);
@@ -352,7 +364,7 @@ void Nsystem(char* inp){
     stde(args[0]);
   }
   stdo("\n");
-  our_heap=eptr;
+  Ndealloc();
 }
 void k_init() {
   // init kernel
@@ -362,9 +374,30 @@ void k_init() {
   bitClear(XMCRA, SRW11);
   __redraw=(bool*)Nalloc(40);
   vga.begin();
+  load_cyrillic_alphabet();
   kbd.begin(A15, 3);
   mount();
   rows=vga.y_tiles()*16;
   cols=vga.x_tiles()*16;
+  int x=0;
+  int y=0;
+  for(byte i=0;i<33;i++){
+    cyrillic_wchr(x,y,i);
+    x+=8;
+    if(x>=cols){
+      x=0;
+      y+=16;
+    }
+  }
+  y+=16;
+  for(byte i=0;i<33;i++){
+    cyrillic_wchr(x,y,i+33);
+    x+=8;
+    if(x>=cols){
+      x=0;
+      y+=16;
+    }
+  }
+  while(true);
 }
 

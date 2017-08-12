@@ -31,6 +31,7 @@ void loop() {
   gr.run();
   if(gr.processes==0){
     vga.clear();
+    vga.set_color(2);
     vga.println(F("Computer has crashed:\n  No more running processes.\n  Any key to reset arduino."));
     while(kbd.available())kbd.read();
     while(!kbd.available());
@@ -47,10 +48,10 @@ void loop() {
   }
 }
 bool dir=false;
-String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface"};
-void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd};
-void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup};
-void (*stp[5])()= {__empty   ,0       , term,   cp_strt};//,__q,__q,__q};
+String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface","mystery"};
+void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd,3123};
+void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup,2199};
+void (*stp[5])()= {__empty   ,0       , term,   cp_strt,2148};//,__q,__q,__q};
 byte napps=5;
 void shell_fup(){
   if(sel_process==0){
@@ -226,6 +227,7 @@ void cp_strt(){
     face.pixel(3,4,1);  // game.  Good game, glad I didn't
     face.pixel(4,4,1);  // loose it.  Now I make it again :D
     face.upload();
+    Ndealloc();
   }
   cp_time=millis();
 }
@@ -294,6 +296,8 @@ void cp_fup(){
   //vga.fill_box(max(0,cpex-4), max(0,cpey-4), cpex+4, cpey+4);
   face.display(cpx,cpy,0);
   face.display(cpex,cpey,0);
+  for(byte i=0;i<40;i++)
+    __redraw[i]=true;
 }
 char* term_cmd="";
 unsigned short term_cnt=0;
