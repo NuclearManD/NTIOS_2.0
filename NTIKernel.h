@@ -386,16 +386,27 @@ void k_init() {
     x+=8;
     if(x>=cols){
       x=0;
-      y+=16;
+      y+=8;
     }
   }
   y+=16;
+  x=0;
   for(byte i=0;i<33;i++){
     cyrillic_wchr(x,y,i+33);
     x+=8;
     if(x>=cols){
       x=0;
-      y+=16;
+      y+=8;
+    }
+  }
+  y+=16;
+  x=0;
+  for(byte i=0;i<27;i++){
+    cyrillic_wchr(x,y,i+66);
+    x+=8;
+    if(x>=cols){
+      x=0;
+      y+=8;
     }
   }
   while(true);
