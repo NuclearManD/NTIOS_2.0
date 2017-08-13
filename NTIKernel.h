@@ -12,7 +12,6 @@
 #include <SPI.h>
 #include <SD.h>
 int rows, cols;
-#include "Cyrillic.h"
 #define system Nsystem
 GearControl gr;
 byte data = 0;
@@ -26,6 +25,9 @@ byte gui=0;
 byte sel_process=0;
 bool* __redraw;
 void (*reset)()=0;
+
+#include "Cyrillic.h"//  include here for dependencies
+
 void term_close(){
   term_opn=false;
   term_y=0;
@@ -368,7 +370,7 @@ void Nsystem(char* inp){
 }
 void k_init() {
   // init kernel
-  bitSet(XMCRA, SRE);  // enable externalmemory
+  bitSet(XMCRA, SRE);  // enable external(:P)memory
   bitSet(XMCRB, XMM0); // release unused pin PC7
   bitClear(XMCRA, SRW10);
   bitClear(XMCRA, SRW11);
@@ -379,22 +381,14 @@ void k_init() {
   mount();
   rows=vga.y_tiles()*16;
   cols=vga.x_tiles()*16;
-  for(byte i=0;i<33;i++){
-    alph_wchr(i);
-  }
+  alph_setcurs(0,0);
+  set_lang(2);
+  alph_print("Khalo l");
+  alph_print(138);
+  alph_print(" monden");
+  set_lang(1);
   alph_nl();
-  alph_nl();
-  for(byte i=33;i<66;i++){
-    alph_wchr(i);
-  }
-  alph_nl();
-  alph_wchr(4);
-  alph_wchr(42);
-  alph_wchr(46);
-  alph_wchr(33);
+  alph_print("Privet");
   while(true);
-  for(byte i=66;i<92;i++){
-    alph_wchr(i);
-  }
 }
 
