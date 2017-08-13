@@ -1,0 +1,17 @@
+Hello!
+
+This project uses uJ to run Java applications.
+
+Their website: http://dmitry.gr/index.php?r=05.Projects&proj=12.%20uJ%20-%20a%20micro%20JVM
+
+###The uJ license is as follows:
+
+This project was made in hopes of being useful and educational, and as such is released under the following license. You may use this code for any use, provided the following conditions are met:
+
+uJ's source and all your modifications are published together with your project, or made available for free to anyone who requests them in a form complete enough to build and run as your device/product does.
+uJ cannot be used in a commercial product/service without first obtaining permission from me (dmitrygr@gmail.com).
+If you use this project in any physical device, you must, in the written materials accompanying it (box inset, manual, or some such thing) include a notice that your device uses code from the uJ project, and a link to http://dmitry.gr. If you use uJ in a purely software project, you must include such a notice in your readme file or manual.
+These license terms, unmodified in any way, always accompany the code and apply to it.
+If you would like to license this code under different terms, contact me, of course.
+
+###End license
