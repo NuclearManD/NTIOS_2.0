@@ -16,7 +16,7 @@ unsigned short len(char* d);
 #include <PS2Keyboard.h>
 #include "fs.h"
 #include "uJ/common.h"
-#include "uJ/uc_HD44780.h"
+#include "uJ/uj.c"
 //#include "UJC.h"
 int rows, cols;
 #define system Nsystem
@@ -389,6 +389,8 @@ void k_init() {
   rows=vga.y_tiles()*16;
   cols=vga.x_tiles()*16;
   alph_setcurs(0,0);
+  print(ROM_fs_rip("null.class"));
+  while(true);
 }
 uint8_t ujReadClassByte(uint8_t* pgmloc, uint16_t offset){
   return pgmloc[offset];
@@ -410,7 +412,7 @@ int Java(int argc, char** argv){
       java_inited=true;
   }
   if(argc == 1){
-    stde("%s: No classes given");
+    stde("No classes given ");
     stde(argv[0]);
     return -1;
   }
@@ -426,13 +428,13 @@ int Java(int argc, char** argv){
     
       if(argv[i]){
         remaining = true;
-        FILE f = open(argv[i], "rb");
+        Nfile* f = open(argv[i], "rb");
         if(!f){
           stde(" Failed to open file\n");
           return -3;
         }
         
-        ret = ujLoadClass((UInt32)f, (i == 0) ? &mainClass : NULL);
+        ret = ujLoadClass((UInt32)f->read(), (i == 0) ? &mainClass : NULL);
         if(ret == UJ_ERR_NONE){       //success
         
           done = true;
@@ -444,7 +446,7 @@ int Java(int argc, char** argv){
         }
         else{
           
-          stde( "Failed to load class %d: %d\n", i, ret);
+          stde( "Failed to load class %d: %d\n");//, i, ret);
           return -4;
         }
       }
@@ -453,7 +455,7 @@ int Java(int argc, char** argv){
   
   for(i = 0; i < argc; i++) if(argv[i]){
     
-    stde( "Completely failed to load class %d (%s)\n", i, argv[i]);
+    stde( "Completely failed to load class %d (%s)\n");//, i, argv[i]);
     return -5;
   }
   
@@ -482,7 +484,7 @@ int Java(int argc, char** argv){
     i = ujInstr();
     if(i != UJ_ERR_NONE){
     
-      stde( "Ret %d @ instr right before 0x%08lX\n", i, ujThreadDbgGetPc(threadH));
+      stde( "Ret %d @ instr right before 0x%08lX\n");//, i, ujThreadDbgGetPc(threadH));
       return -9;
     }
   }

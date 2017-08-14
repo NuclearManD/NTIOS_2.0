@@ -42,8 +42,7 @@ class Nfile{
         }else if(dev==4){
           // Read from ROM disk
           if(ROM_fs_exists(p)){
-            data=Nalloc(ROM_fs_size(p)+1);
-            ROM_fs_rip(p)
+            data=ROM_fs_rip(p);
           }
         }
       }else if(access&FILE_WRITE){
@@ -97,4 +96,7 @@ Nfile* open(char* name,byte access){
     path+=4;
   }else
     return 0;
+  Nfile* tmp = (Nfile*)Nalloc(sizeof(Nfile));
+  tmp->make(dev,path, access);
+  return tmp;
 }
