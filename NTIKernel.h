@@ -5,18 +5,16 @@
 #else
 #include "WProgram.h"
 #endif
-//#define UInt32 uint32_t
-//#define UInt24 uint32_t
-//#define UInt16 uint16_t
-//#define UInt8 uint8_t
+char* substr(char* arr, int begin, int len);
+char* Nalloc(unsigned short length);
+unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
 #define redraw __redraw[gr.cprocess]
 #include <NMT_GFX.h>
 #include <GEAR.h>
 #include <PS2Keyboard.h>
-#include <SPI.h>
-#include <SD.h>
+#include "fs.h"
 #include "uJ/common.h"
 #include "uJ/uc_HD44780.h"
 //#include "UJC.h"
@@ -45,6 +43,14 @@ int freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+char* substr(char* arr, int begin, int len)
+{
+    char* res = Nalloc(len+1);
+    for (int i = 0; i < len; i++)
+        res[i] = *(arr + begin + i);
+    res[len] = 0;
+    return res;
 }
 unsigned short len(char* d){
   unsigned short i=0;
@@ -180,17 +186,7 @@ bool okcancel(const char* q){
   gear_stopwait();
   return sel;
 }
-bool sd_mounted=false;
-bool mount(){
-  pinMode(53, OUTPUT);
-  pinMode(52, OUTPUT);
-  pinMode(54, OUTPUT);
-  sd_mounted=SD.begin(4);
-  return sd_mounted;
-}
-File open(char* name,byte access){
-  return SD.open(name,access);
-}
+int Java(int argc, char** argv);
 char* read(int* size, char* name){
   File f=SD.open(name);
   if(f){
@@ -367,9 +363,11 @@ void Nsystem(char* inp){
           stde("Function non existent.");*/
       }
     }
+  }else if(!strcmp(args[0],"java")){
+    Java(cnt,args);
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
-    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list");
+    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list\n  java <classes> : run Java apps");
   }else{
     stde("Not a command:");
     stde(args[0]);
@@ -392,4 +390,102 @@ void k_init() {
   cols=vga.x_tiles()*16;
   alph_setcurs(0,0);
 }
+uint8_t ujReadClassByte(uint8_t* pgmloc, uint16_t offset){
+  return pgmloc[offset];
+}
+bool java_inited=false;
+int Java(int argc, char** argv){
 
+  uint32_t threadH;
+  bool done;
+  bool remaining;
+  uint8_t ret;
+  struct UjClass* mainClass = NULL;
+  int i;
+  if(!java_inited){
+    ret = ujInit(NULL);
+    if(ret != UJ_ERR_NONE){
+      stde("ujInit() fail\n");
+    }else
+      java_inited=true;
+  }
+  if(argc == 1){
+    stde("%s: No classes given");
+    stde(argv[0]);
+    return -1;
+  }
+  
+  //load provided classes now
+  
+  argc--;
+  argv++;
+  do{
+    done = false;
+    remaining = false;
+    for(i = 0; i < argc; i++){
+    
+      if(argv[i]){
+        remaining = true;
+        FILE f = open(argv[i], "rb");
+        if(!f){
+          stde(" Failed to open file\n");
+          return -3;
+        }
+        
+        ret = ujLoadClass((UInt32)f, (i == 0) ? &mainClass : NULL);
+        if(ret == UJ_ERR_NONE){       //success
+        
+          done = true;
+          argv[i] = NULL;
+        }
+        else if(ret == UJ_ERR_DEPENDENCY_MISSING){  //fail: we'll try again later
+        
+          //nothing to do here  
+        }
+        else{
+          
+          stde( "Failed to load class %d: %d\n", i, ret);
+          return -4;
+        }
+      }
+    }
+  }while(done);
+  
+  for(i = 0; i < argc; i++) if(argv[i]){
+    
+    stde( "Completely failed to load class %d (%s)\n", i, argv[i]);
+    return -5;
+  }
+  
+  ret = ujInitAllClasses();
+  if(ret != UJ_ERR_NONE){
+    stde( "ujInitAllClasses() fail\n");
+    return -6;  
+  }
+  
+  //now classes are loaded, time to call the entry point
+  
+  threadH = ujThreadCreate(0);
+  if(!threadH){
+    stde( "ujThreadCreate() fail\n");
+    return -7;  
+  }
+  
+  i = ujThreadGoto(threadH, mainClass, "main", "()V");
+  if(i == UJ_ERR_METHOD_NONEXISTENT){
+  
+    stde( "Main method not found!\n");
+    return -8; 
+  }
+  while(ujCanRun()){
+    
+    i = ujInstr();
+    if(i != UJ_ERR_NONE){
+    
+      stde( "Ret %d @ instr right before 0x%08lX\n", i, ujThreadDbgGetPc(threadH));
+      return -9;
+    }
+  }
+  
+  return 0;
+}

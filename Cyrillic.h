@@ -1,5 +1,4 @@
 #include <avr/pgmspace.h>
-char* Nalloc(unsigned short length);
 #define ALPH_LENGTH 94
 const PROGMEM byte cyrillic [ALPH_LENGTH][8] = {
   {
