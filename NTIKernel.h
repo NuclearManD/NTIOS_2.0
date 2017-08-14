@@ -5,12 +5,21 @@
 #else
 #include "WProgram.h"
 #endif
+//#define UInt32 uint32_t
+//#define UInt24 uint32_t
+//#define UInt16 uint16_t
+//#define UInt8 uint8_t
+#define CPU_ATMEL_NTISYS
+
 #define redraw __redraw[gr.cprocess]
 #include <NMT_GFX.h>
 #include <GEAR.h>
 #include <PS2Keyboard.h>
 #include <SPI.h>
 #include <SD.h>
+#include "uJ/common.h"
+#include "uJ/uc_HD44780.h"
+//#include "UJC.h"
 int rows, cols;
 #define system Nsystem
 GearControl gr;
@@ -382,13 +391,5 @@ void k_init() {
   rows=vga.y_tiles()*16;
   cols=vga.x_tiles()*16;
   alph_setcurs(0,0);
-  set_lang(2);
-  alph_print("Khalo l");
-  alph_print(138);
-  alph_print(" monden");
-  set_lang(1);
-  alph_nl();
-  alph_print("Privet");
-  while(true);
 }
 

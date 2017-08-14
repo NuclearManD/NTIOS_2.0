@@ -81,6 +81,19 @@ void err(const char* str);
 	#define GPIO_PINS_PER_PORT	8
 	#define EEPROM_SIZE		E2END
 	#define _HEAP_ATTRS_		__attribute__((section (".noinit")))
+		
+#elif defined(CPU_ATMEL_NTISYS)
+
+	#define GET_ADDRESS		GET_FAR_ADDRESS
+	#define pgm_read		pgm_read_byte_far
+	#define pgm_read_str		pgm_read
+	#define _PROGMEM_		PROGMEM
+	#define HEAP_ALIGN		1
+	#define INCLUDE_ATMEGA_FILES
+	#define GPIO_PORTS		0
+	#define GPIO_PINS_PER_PORT	0
+	#define EEPROM_SIZE		E2END
+	#define _HEAP_ATTRS_		__attribute__((section (".noinit")))
 	
 #elif defined(CPU_DSPIC) || defined (CPU_PIC24)
 
@@ -113,7 +126,7 @@ void err(const char* str);
 	#define F_CPU			20000000UL
 	#define HEAP_SZ			14336
 	#define FLASHROM_PAGE		256UL		//in bytes
-	#define FLASHROM_SIZE		(128UL*1024UL)
+	#define FLASHROM_SIZE	0	(128UL*1024UL)
 	#define UJ_LOG
 	
 #elif defined(BOARD_DIANA)
@@ -148,11 +161,18 @@ void err(const char* str);
 	#define HAVE_GFX_LCD
 	#define HAVE_CHAR_LCD
 	#define FLASHROM_PAGE		1024	//actually later they become 512, but who cares :)
+#elif defined(CPU_ATMEL_NTISYS)
+	
+	#define F_CPU			16000000UL
+	#define HEAP_SZ			24576
+	#define FLASHROM_PAGE		256UL		//in bytes
+	#define FLASHROM_SIZE		(128UL*1024UL)
+	#define UJ_LOG
 	
 #elif defined (BOARD_PC)
 
 	#define HEAP_SZ			3172
-	
+
 #else
 
 	#error "NO BOARD_* macro defined"
