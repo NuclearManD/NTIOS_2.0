@@ -15,9 +15,6 @@ unsigned short len(char* d);
 #include <GEAR.h>
 #include <PS2Keyboard.h>
 #include "fs.h"
-#include "uJ/common.h"
-#include "uJ/uj.c"
-//#include "UJC.h"
 int rows, cols;
 #define system Nsystem
 GearControl gr;
@@ -391,7 +388,7 @@ void k_init() {
   alph_setcurs(0,0);
   print(ROM_fs_rip("null.class"));
   while(true);
-}
+}/*
 uint8_t ujReadClassByte(uint8_t* pgmloc, uint16_t offset){
   return pgmloc[offset];
 }
@@ -490,4 +487,4 @@ int Java(int argc, char** argv){
   }
   
   return 0;
-}
+}*/
