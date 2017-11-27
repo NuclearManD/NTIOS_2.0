@@ -4,27 +4,21 @@
 void setup() {
   // put your setup code here, to run once:
   k_init();
-  println("System is booting with GEAR...");
-  gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER);
+  vga.println("System is booting with GEAR...");
+  __redraw[gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER)]=true;
   //println("Starting system processes...");
   //gr.addProcess(__empty,usage_daemon,(char*)"daemon0",P_ROOT);
-  println("Setup done, please wait...");
-  println("Any key to open shell.");
+  vga.println("Setup done, please wait...");
+  vga.println("Any key to open shell.");
   while(!kbd.available());
   kbd.read();
+  vga.clear();
   for(byte i=0;i<gr.processes;i++){
     gr.ftimes[i]=millis()+gr.fupd_rate;
   }
-  sw_gui(0);
-  /*stdo=(void (*)(const char*))term_print;
-  stde=(void (*)(const char*))term_error;
-  stdo("test...\r");
-  system("sudo");
-  system("sudo -f");
-  system("lsps");
-  system("terminate 0");
-  while(true);*/
-  randomSeed(millis());
+  stdo=(void (*)(const char*))noprnt;
+  stde=(void (*)(const char*))noprnt;
+  randomSeed(millis()+analogRead(A5));
 }
 
 void loop() {
@@ -48,19 +42,19 @@ void loop() {
   }
 }
 bool dir=false;
-String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface","mystery"};
-void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd,3123};
-void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup,2199};
-void (*stp[5])()= {__empty   ,0       , term,   cp_strt,2148};//,__q,__q,__q};
+String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface","EDIT"};
+void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd,edit_upd};
+void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup,edit_fup};
+void (*stp[5])()= {__empty   ,0       , term,   cp_strt,edit_start};//,__q,__q,__q};
 byte napps=5;
 void shell_fup(){
   if(sel_process==0){
     if(redraw){
       selected=0;
-      window(0,1,15,6);
-      vga.set_color(2);
+      window(0,1,15,napps+2);
       vga.set_cursor_pos(0,1);
-      vga.print(F("OPEN PROGRAM:"));
+      vga.set_color(0);
+      vga.print("OPEN PROGRAM:");
       vga.set_cursor_pos(1,2);
       vga.set_color(3);
       vga.print(apps[0]);
@@ -210,13 +204,14 @@ long cp_time;
 int cpx=50;
 int cpy=50;
 int cpex, cpey;
+byte face_buffer[20];
 void cp_strt(){
   cp_score=65025;
   if(!alloc_face){
     cpex=random(10,100);
     cpex=random(10,80);
     alloc_face=true;
-    face.binary_image=Nalloc(20);
+    face.binary_image=face_buffer;
     face.set_size(8,8);
     face.set_center(4,4);
     face.fill(0);
@@ -227,7 +222,6 @@ void cp_strt(){
     face.pixel(3,4,1);  // game.  Good game, glad I didn't
     face.pixel(4,4,1);  // loose it.  Now I make it again :D
     face.upload();
-    Ndealloc();
   }
   cp_time=millis();
 }
@@ -299,17 +293,7 @@ void cp_fup(){
   for(byte i=0;i<40;i++)
     __redraw[i]=true;
 }
-char* term_cmd="";
 unsigned short term_cnt=0;
-void term_print(char* d){
-  vga.set_color(1);
-  vga.print(d);
-  vga.set_color(2);
-}
-void term_error(char* d){
-  vga.set_color(2);
-  vga.print(d);
-}
 void term(){
   if(!okcancel("CMD needs to stop GEAR.")){
     gr.kill(gr.cprocess); // die, it canceled.
@@ -317,36 +301,46 @@ void term(){
   }else{
     stdo=term_print;
     stde=term_error;
-    term_cmd=Nalloc(128);
+    char term_cmd[64];
     vga.set_cursor_pos(0,0);
     vga.clear();
     vga.set_color(1);
-    vga.println(F("Terminal Started.\nLeave with 'exit -L'"));
+    vga.println("Terminal Started.\nLeave with 'exit -L'");
     vga.print("> ");
-  }
-  while(true){
-    if(kbd.available()){
-      char c=kbd.read();
-      if((c=='\n')||(c=='\r')){
-        term_cmd[term_cnt]=0;
-        if(!strcmp(term_cmd,"exit -L"))
-          break;
-        vga.print('\r');
-        system(term_cmd);
-        vga.set_color(1);
-        term_cnt=0;
-        vga.print("> ");
-      }else if(c==PS2_BACKSPACE){
-        vga.print(c);
-        term_cnt--;
-      }else{
-        term_cmd[term_cnt]=c;
-        term_cnt++;
-        vga.print(c);
+    while(true){
+      if(kbd.available()){
+        char c=kbd.read();
+        if((c=='\n')||(c=='\r')){
+          term_cmd[term_cnt]=0;
+          if(!strcmp(term_cmd,"exit -L"))
+            break;
+          vga.print('\r');
+          system(term_cmd);
+          vga.set_color(1);
+          term_cnt=0;
+          vga.print("> ");
+        }else if(c==PS2_BACKSPACE){
+          vga.print(c);
+          term_cnt--;
+        }else{
+          term_cmd[term_cnt]=c;
+          term_cnt++;
+          vga.print(c);
+        }
       }
     }
   }
   gr.kill(gr.processes-1);// stop
   gear_stopwait();// fix GEAR
+}
+void edit_start(){
+  fileChooser();
+  gr.kill(gr.cprocess);
+}
+void edit_upd(){
+  
+}
+void edit_fup(){
+  
 }
 

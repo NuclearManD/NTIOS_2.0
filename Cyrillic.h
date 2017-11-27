@@ -1,6 +1,6 @@
 #include <avr/pgmspace.h>
 #define ALPH_LENGTH 94
-const PROGMEM byte cyrillic [ALPH_LENGTH][8] = {
+const byte cyrillic [ALPH_LENGTH][8] = {
   {
     0b00000,
     0b00100,

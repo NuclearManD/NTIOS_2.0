@@ -6,7 +6,7 @@
 #include "WProgram.h"
 #endif
 char* substr(char* arr, int begin, int len);
-char* Nalloc(unsigned short length);
+void Nsystem(char* inp,char* curdir="/");
 unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
@@ -21,60 +21,60 @@ GearControl gr;
 byte data = 0;
 NMT_GFX vga;
 PS2Keyboard kbd;
-static volatile uint8_t *more_RAM = reinterpret_cast<volatile uint8_t*>(0x8000);
 byte selected=0;
 bool term_opn=false;
 byte term_y, term_x=0;
 byte gui=0;
 byte sel_process=0;
-bool* __redraw;
+bool __redraw[40];
 void (*reset)()=0;
-
+void noprnt(char* x){}
+void (*stdo)(char*)=noprnt;
+void (*stde)(char*)=noprnt;
+#ifdef USE_CYRILLIC
 #include "Cyrillic.h"//  include here for dependencies
-
+#endif
 void term_close(){
   term_opn=false;
   term_y=0;
+}
+void term_print(char* d){
+  vga.set_color(1);
+  vga.print(d);
+}
+void term_error(char* d){
+  vga.set_color(2);
+  vga.print(d);
+  vga.set_color(1);
+}
+char* int_to_str(int i){
+  char* o=malloc(5);
+  char* a="0123456789ABCDEF";
+  o[0] = a[(i >> 12) & 0xF];
+  o[1] = a[(i >> 8) & 0xF];
+  o[2] = a[(i >> 4) & 0xF];
+  o[3] = a[i & 0xF];
+  o[4]=0;
+  return o;
 }
 int freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
-char* substr(char* arr, int begin, int len)
+/*char* substr(char* arr, int begin, int len)
 {
     char* res = Nalloc(len+1);
     for (int i = 0; i < len; i++)
         res[i] = *(arr + begin + i);
     res[len] = 0;
     return res;
-}
+}*/
 unsigned short len(char* d){
   unsigned short i=0;
   while(d[i]!=0)
     i++;
   return i;
-}
-unsigned short our_heap=0x8000;
-unsigned short* dev2mem=(unsigned short*)0x8000;
-unsigned short our_stack=0x7FFF;
-char* Nalloc(unsigned short length){
-  unsigned short tmp=our_heap;
-  our_heap+=length;
-  our_stack-=2;
-  dev2mem[our_stack]=tmp;
-  return (char*)tmp;
-}
-void Ndealloc(){
-  if(our_stack>=0x7FFE){
-    our_heap=0x8000;
-    return;
-  }
-  our_heap=dev2mem[our_stack];
-  our_stack+=2;
-}
-int Nfree(){
-  return our_stack-(our_heap-0x8000)+1;
 }
 int to_int(char* str){
   int out=0;
@@ -183,12 +183,11 @@ bool okcancel(const char* q){
   gear_stopwait();
   return sel;
 }
-int Java(int argc, char** argv);
 char* read(int* size, char* name){
   File f=SD.open(name);
   if(f){
     size[0]=f.size();
-    char* ptr=Nalloc(size[0]);
+    char* ptr=(char*)malloc(size[0]);
     f.read(ptr, size[0]);
     f.close();
     return ptr;
@@ -249,14 +248,49 @@ void print(char q){
   }else
     term_y++;
 }
-void noprnt(char* x){}
-void (*stdo)(char*)=noprnt;
-void (*stde)(char*)=noprnt;
+void print_X33101(char* q){
+  print(q);
+}
+char* fileChooser(char* curdir=""){
+  bool sel=false;
+  stdo=print_X33101;
+  while(true){
+    if(kbd.available()){
+    uint16_t c=kbd.read();
+      if(c==PS2_ENTER)
+        break;
+      else if((c==PS2_RIGHTARROW)||(c==PS2_LEFTARROW)){
+        sel=!sel;
+        if(sel){
+          system("dir",curdir);
+          vga.set_cursor_pos(4,3);
+          vga.set_color(3);
+          vga.print("OK");
+          vga.set_color(2);
+          vga.print(" CANCEL");
+          vga.set_color(2);
+        }else{
+          system("dir",curdir);
+          vga.set_cursor_pos(4,3);
+          vga.set_color(2);
+          vga.print("OK");
+          vga.set_color(3);
+          vga.print(" CANCEL");
+          vga.set_color(2);
+        }
+      }
+    }
+  }
+  vga.set_color(0);
+  vga.fill_box(22,33,117,68);
+  gear_stopwait();
+  return 0;
+}
 bool term_force=false;
-void Nsystem(char* inp){
+void Nsystem(char* inp,char* curdir="/"){
   char* args[10];
   byte cnt=1;
-  char* src=Nalloc(len(inp)+1);
+  char* src=(char*)malloc(len(inp)+1);
   args[0]=src;
   for(unsigned short i=0; i<len(inp); i++){
     char c=inp[i];
@@ -312,6 +346,7 @@ void Nsystem(char* inp){
       stdo("Success.");
     else
       stde("Unknown Error.");
+    kbd.begin(22, 21);
   }else if(!strcmp(args[0],"cls")){
     vga.set_cursor_pos(0,0);
     vga.clear();
@@ -320,16 +355,14 @@ void Nsystem(char* inp){
     // list devices
     stdo(" 0 PS2 Keyboard\n 1 ");
     stdo(vga.get_card_ver());
-    stdo("\n 2 RAM_32K");
+    //stdo("\n 2 RAM_32K");
     stdo("\n 3 SD card");
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
-    stdo("\nDev2 bytes free: ");
-    stdo(String(Nfree()).c_str());
   }else if(!strcmp(args[0],"do")){
-    if(cnt<3){
-      stde("Usage: do (dev id) (func) [args...]");
+    if(!(term_force||(gr.p_perms[gr.cprocess]&P_ROOT)==P_ROOT)){//cnt<3){
+      stde("Root privladges required.");//"Usage: do (dev id) (func) [args...]");
     }else{
       byte dev=to_int(args[1]);
       if(dev==0)
@@ -342,149 +375,65 @@ void Nsystem(char* inp){
         else
           stde("Function non existent.");
       }else if(dev==2){
-        if(!strcmp(args[2],"dealloc")){
-          our_heap=0x8000;
-          if(cnt>=4){
-            our_heap-=to_int(args[1]);
-          }
-          stdo("Bytes free: ");
-          stdo(String(Nfree()).c_str());
+        if(!strcmp(args[2],"reset")){
         }else
           stde("Function non existent.");
       }else if(dev==3){
-        /*if(!strcmp(args[2],"mount")){
+        if(!strcmp(args[2],"mount")){
           if(mount()){
             
           }
         }else
-          stde("Function non existent.");*/
+          stde("Function non existent.");
       }
     }
-  }else if(!strcmp(args[0],"java")){
-    Java(cnt,args);
+  }else if(!strcmp(args[0],"dir")){
+    if(!sd_mounted){
+      stde("No SD card mounted.");
+    }else{
+      File dir = SD.open(curdir);
+      while (true) {
+        File entry =  dir.openNextFile();
+        if (! entry) {
+          break;
+        }
+        stdo(entry.name());
+        if (entry.isDirectory()) {
+          stdo("/\n");
+        } else {
+          // files have sizes, directories do not
+          stdo("\t\t0x");
+          stdo(int_to_str(entry.size()));
+          stdo('\n');
+        }
+        entry.close();
+      }
+    }
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
-    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list\n  java <classes> : run Java apps");
+    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list\n  dir : list files");
   }else{
     stde("Not a command:");
     stde(args[0]);
   }
   stdo("\n");
-  Ndealloc();
+  free(src);
 }
 void k_init() {
-  // init kernel
-  bitSet(XMCRA, SRE);  // enable external(:P)memory
-  bitSet(XMCRB, XMM0); // release unused pin PC7
-  bitClear(XMCRA, SRW10);
-  bitClear(XMCRA, SRW11);
-  __redraw=(bool*)Nalloc(40);
   vga.begin();
-  load_cyrillic_alphabet();
-  kbd.begin(A15, 3);
-  mount();
+  stdo=term_print;
+  stde=term_error;
+  stdo("Loading...\n");
+  if(mount())
+    stdo("Mounted SD card.\r");
+  else
+    stde("Failed to mount SD card.\r");
+  kbd.begin(22, 21);
+  stdo("Loaded keyboard.\r");
   rows=vga.y_tiles()*16;
   cols=vga.x_tiles()*16;
+  #ifdef USE_CYRILLIC
   alph_setcurs(0,0);
-  print(ROM_fs_rip("null.class"));
-  while(true);
-}/*
-uint8_t ujReadClassByte(uint8_t* pgmloc, uint16_t offset){
-  return pgmloc[offset];
+  #endif
+  stdo("Entering user mode...\r");
 }
-bool java_inited=false;
-int Java(int argc, char** argv){
-
-  uint32_t threadH;
-  bool done;
-  bool remaining;
-  uint8_t ret;
-  struct UjClass* mainClass = NULL;
-  int i;
-  if(!java_inited){
-    ret = ujInit(NULL);
-    if(ret != UJ_ERR_NONE){
-      stde("ujInit() fail\n");
-    }else
-      java_inited=true;
-  }
-  if(argc == 1){
-    stde("No classes given ");
-    stde(argv[0]);
-    return -1;
-  }
-  
-  //load provided classes now
-  
-  argc--;
-  argv++;
-  do{
-    done = false;
-    remaining = false;
-    for(i = 0; i < argc; i++){
-    
-      if(argv[i]){
-        remaining = true;
-        Nfile* f = open(argv[i], "rb");
-        if(!f){
-          stde(" Failed to open file\n");
-          return -3;
-        }
-        
-        ret = ujLoadClass((UInt32)f->read(), (i == 0) ? &mainClass : NULL);
-        if(ret == UJ_ERR_NONE){       //success
-        
-          done = true;
-          argv[i] = NULL;
-        }
-        else if(ret == UJ_ERR_DEPENDENCY_MISSING){  //fail: we'll try again later
-        
-          //nothing to do here  
-        }
-        else{
-          
-          stde( "Failed to load class %d: %d\n");//, i, ret);
-          return -4;
-        }
-      }
-    }
-  }while(done);
-  
-  for(i = 0; i < argc; i++) if(argv[i]){
-    
-    stde( "Completely failed to load class %d (%s)\n");//, i, argv[i]);
-    return -5;
-  }
-  
-  ret = ujInitAllClasses();
-  if(ret != UJ_ERR_NONE){
-    stde( "ujInitAllClasses() fail\n");
-    return -6;  
-  }
-  
-  //now classes are loaded, time to call the entry point
-  
-  threadH = ujThreadCreate(0);
-  if(!threadH){
-    stde( "ujThreadCreate() fail\n");
-    return -7;  
-  }
-  
-  i = ujThreadGoto(threadH, mainClass, "main", "()V");
-  if(i == UJ_ERR_METHOD_NONEXISTENT){
-  
-    stde( "Main method not found!\n");
-    return -8; 
-  }
-  while(ujCanRun()){
-    
-    i = ujInstr();
-    if(i != UJ_ERR_NONE){
-    
-      stde( "Ret %d @ instr right before 0x%08lX\n");//, i, ujThreadDbgGetPc(threadH));
-      return -9;
-    }
-  }
-  
-  return 0;
-}*/
