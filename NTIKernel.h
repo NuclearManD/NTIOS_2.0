@@ -5,6 +5,7 @@
 #else
 #include "WProgram.h"
 #endif
+#include "basic.h"
 char* substr(char* arr, int begin, int len);
 void Nsystem(char* inp,char* curdir="/");
 unsigned short len(char* d);
@@ -46,6 +47,37 @@ void term_error(char* d){
   vga.set_color(2);
   vga.print(d);
   vga.set_color(1);
+}
+int exec_file(char* name){
+  if(!sd_mounted){
+    stde("No storage.");
+    return 0;
+  }
+  char* data;
+  char compiled[256];
+  int len;
+  File f=SD.open(name,FILE_READ);
+  if(!strcmp(name+len(name)-3,"BIN")){
+    len=f.size();
+    unsigned byte i=0;
+    while (f.available()) {
+      compiled[i]=(f.read());
+      i++;
+    }
+  }else{
+    data=malloc(f.size()+1);
+    unsigned byte i=0;
+    while (f.available()) {
+      data[i]=(f.read());
+      i++;
+    }
+    data[i]=0;
+    len=compile(data,compiled);
+    free(data);
+  }
+  f.close();
+  setup_basic(stdo);
+  return executeCompiledCode(compiled, len);
 }
 char* int_to_str(int i){
   char* o=malloc(5);
@@ -412,6 +444,8 @@ void Nsystem(char* inp,char* curdir="/"){
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
     stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list\n  dir : list files");
+  }else if((args[0][0]=='.')&&(args[0][1]=='/')){
+    exec_file(args[0]+2);
   }else{
     stde("Not a command:");
     stde(args[0]);

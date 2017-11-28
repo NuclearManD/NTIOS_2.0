@@ -18,6 +18,8 @@ void setup() {
   }
   stdo=(void (*)(const char*))noprnt;
   stde=(void (*)(const char*))noprnt;
+  File r = SD.open("PGM.BAS",FILE_WRITE);
+  r.println("print \"Hello World!\"");
   randomSeed(millis()+analogRead(A5));
 }
 
