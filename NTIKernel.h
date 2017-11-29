@@ -7,7 +7,8 @@
 #endif
 #include "basic.h"
 char* substr(char* arr, int begin, int len);
-void Nsystem(char* inp,char* curdir="/");
+String term_curdir="/";
+void Nsystem(char* inp,char* curdir=term_curdir.c_str());
 unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
@@ -55,29 +56,29 @@ int exec_file(char* name){
   }
   char* data;
   char compiled[256];
-  int len;
+  int length;
   File f=SD.open(name,FILE_READ);
   if(!strcmp(name+len(name)-3,"BIN")){
-    len=f.size();
-    unsigned byte i=0;
+    length=f.size();
+    byte i=0;
     while (f.available()) {
       compiled[i]=(f.read());
       i++;
     }
   }else{
     data=malloc(f.size()+1);
-    unsigned byte i=0;
+    byte i=0;
     while (f.available()) {
       data[i]=(f.read());
       i++;
     }
     data[i]=0;
-    len=compile(data,compiled);
+    length=compile(data,compiled);
     free(data);
   }
   f.close();
   setup_basic(stdo);
-  return executeCompiledCode(compiled, len);
+  return executeCompiledCode(compiled, length);
 }
 char* int_to_str(int i){
   char* o=malloc(5);
@@ -243,6 +244,7 @@ void println(const char* q){
     if(c=='\n'||c=='\r')
       term_y++;
   }
+  vga.set_color(2);
   vga.print(q);
 }
 void print(const char* q){
@@ -262,9 +264,11 @@ void print(const char* q){
     }else
       term_x++;
   }
+  vga.set_color(2);
   vga.print(q);
 }
 void print(char q){
+  vga.set_color(2);
   if(term_opn==false){
     window(0,0,30,12);
     for(int i=0;i<gr.processes;i++){
@@ -280,46 +284,99 @@ void print(char q){
   }else
     term_y++;
 }
-void print_X33101(char* q){
-  print(q);
-}
-char* fileChooser(char* curdir=""){
-  bool sel=false;
-  stdo=print_X33101;
+char* fileChooser(char* cd="/"){ // use char* for compatibility
+  String curdir=cd;             // allocate on stack for best performance
+  //char* last_working_dir=curdir.c_str();
+  int sel=0; // 0=>textbox, 1+ => files & directories
+  File dir;
   while(true){
-    if(kbd.available()){
-    uint16_t c=kbd.read();
-      if(c==PS2_ENTER)
-        break;
-      else if((c==PS2_RIGHTARROW)||(c==PS2_LEFTARROW)){
-        sel=!sel;
-        if(sel){
-          system("dir",curdir);
-          vga.set_cursor_pos(4,3);
+    window(0,0,30,10);
+    if(sel==0){
+      vga.set_color(3);
+    }else
+      vga.set_color(2);
+    vga.set_cursor_pos(1,1);
+    vga.print(curdir.c_str());
+    if(SD.exists(curdir.c_str()))
+      dir = SD.open(curdir.c_str());
+    //if(!SD.exists(curdir.c_str())){//!dir){
+    //  dir = SD.open(last_working_dir);
+    //}else
+    //  dir = SD.open(curdir.c_str());//last_working_dir=curdir.c_str();
+    if(SD.exists(curdir.c_str())||curdir.equals("/")){
+      dir = SD.open(curdir.c_str());
+      for(byte i=1;i<9;i++) {
+        vga.set_cursor_pos(1,i+1);
+        if(i==sel){
           vga.set_color(3);
-          vga.print("OK");
+        }else
           vga.set_color(2);
-          vga.print(" CANCEL");
-          vga.set_color(2);
-        }else{
-          system("dir",curdir);
-          vga.set_cursor_pos(4,3);
-          vga.set_color(2);
-          vga.print("OK");
-          vga.set_color(3);
-          vga.print(" CANCEL");
-          vga.set_color(2);
+        File entry =  dir.openNextFile();
+        if (! entry) {
+          break;
         }
+        vga.print(entry.name());
+        if (entry.isDirectory()) {
+          vga.print('/');
+        } else {
+          // files have sizes, directories do not
+          for(byte j=0;j<16-len(entry.name());j++)
+            vga.print(' ');
+          vga.print("0x");
+          vga.print(int_to_str(entry.size()));
+          vga.print("\n");
+        }
+        entry.close();
       }
     }
+    while(!kbd.available());
+    uint16_t c=kbd.read();
+    if(c==PS2_DOWNARROW)
+      sel++;
+    else if(c==PS2_UPARROW)
+      sel--;
+    else if(c==PS2_ESC)
+      break;
+    else if(sel==0){
+      if(c==PS2_ENTER){
+        if(SD.exists(curdir.c_str()))
+          break;
+        else
+          sel=8;
+      }else if(c==8){
+        curdir=curdir.substring(0,curdir.length()-1);
+      }else
+        curdir+=(char)c;
+    }else{
+      if(c==PS2_ENTER){
+        int i=2;
+        dir = SD.open(curdir.c_str());
+        File entry=dir.openNextFile();
+        for(i;i<=sel;i++) {
+          entry.close();
+          entry = dir.openNextFile();
+          if(!entry)
+            break;
+        }
+        if(!curdir.endsWith("/"))
+          curdir+='/';
+        curdir+=entry.name();
+        if (entry.isDirectory()) {
+          curdir+='/';
+        }
+        entry.close();
+        sel=0;
+      }
+    }
+    sel=sel%8;
   }
   vga.set_color(0);
   vga.fill_box(22,33,117,68);
   gear_stopwait();
-  return 0;
+  return curdir.c_str();
 }
 bool term_force=false;
-void Nsystem(char* inp,char* curdir="/"){
+void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
   char* args[10];
   byte cnt=1;
   char* src=(char*)malloc(len(inp)+1);
@@ -434,12 +491,40 @@ void Nsystem(char* inp,char* curdir="/"){
           stdo("/\n");
         } else {
           // files have sizes, directories do not
-          stdo("\t\t0x");
+          for(byte j=0;j<16-len(entry.name());j++)
+            stdo(" ");
+          stdo("0x");
           stdo(int_to_str(entry.size()));
-          stdo('\n');
+          stdo("\n");
         }
         entry.close();
       }
+    }
+  }else if(!strcmp(args[0],"cd")){
+    if(cnt<2){
+      stde("Usage: cd directory");
+    }else{
+      if(args[1][0]=='/'){
+        File f=SD.open(args[1]);
+        if(f&&f.isDirectory()){
+          term_curdir=args[1];
+          goto nonewline;
+        }else
+          stde("Not a directory.");
+        f.close();
+      }else{
+        File f=SD.open((term_curdir+args[1]).c_str());
+        if(f&&f.isDirectory()){
+          term_curdir+=args[1];
+          goto nonewline;
+        }else{
+          stde("Not a directory: ");
+          stde((term_curdir+args[1]).c_str());
+        }
+        f.close();
+      }
+      if(!term_curdir.endsWith("/"))
+        term_curdir+='/';
     }
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
@@ -451,6 +536,7 @@ void Nsystem(char* inp,char* curdir="/"){
     stde(args[0]);
   }
   stdo("\n");
+nonewline:
   free(src);
 }
 void k_init() {

@@ -18,8 +18,9 @@ void setup() {
   }
   stdo=(void (*)(const char*))noprnt;
   stde=(void (*)(const char*))noprnt;
-  File r = SD.open("PGM.BAS",FILE_WRITE);
+  File r = SD.open("pgm.bas",FILE_WRITE);
   r.println("print \"Hello World!\"");
+  r.close();
   randomSeed(millis()+analogRead(A5));
 }
 
@@ -337,7 +338,6 @@ void term(){
 }
 void edit_start(){
   fileChooser();
-  gr.kill(gr.cprocess);
 }
 void edit_upd(){
   
