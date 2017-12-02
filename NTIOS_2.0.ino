@@ -4,7 +4,6 @@
 void setup() {
   // put your setup code here, to run once:
   k_init();
-  vga.block_color(0xE0,3);
   stdo=term_print;
   stde=term_error;
   char term_cmd[64];
@@ -40,10 +39,10 @@ void loop() {
   }
 }
 bool dir=false;
-String apps[5]=   {"TaskMan" ,"reboot", "exit GUI",  "creeperface","EDIT"};
-void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd,edit_upd};
-void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup,edit_fup};
-void (*stp[5])()= {__empty   ,0       , logout_func,   cp_strt,edit_start};//,__q,__q,__q};
+String apps[5]=   {"TaskMan" ,"reboot", "exit GUI" ,  "creeperface","EDIT"};
+void (*upd[5])()= {taskupd   ,__empty , __empty    ,cp_upd         ,edit_upd};
+void (*fupd[5])()={taskfu    ,__empty , __empty    ,cp_fup         ,edit_fup};
+void (*stp[5])()= {__empty   ,0       , logout_func,cp_strt        ,edit_start};//,__q,__q,__q};
 byte napps=5;
 void shell_fup(){
   if(sel_process==0){
@@ -89,8 +88,8 @@ void shell_upd(){
         if(selected>0){
           sw_gui(1);
           vga.clear();
-        }else
-          alert("ERROR: too many processes!");
+        }//else
+         // alert("ERROR: too many processes!");
       }else if(c==(PS2_TAB)){
         selected=0;
         term_close();
@@ -131,20 +130,39 @@ void shell_upd(){
 long last_task_time=0;
 byte last_task_count=0;
 byte task_sel=0;
+int memory_table[16];
+byte table_entries=0;
 void taskfu(){
+  int free_mem=freeRam();// get at the top for most accurate results
+  
   if(last_task_time>millis())
     return;
   if(last_task_count>gr.processes){
     vga.set_color(0);
     vga.fill_box(112,(gr.processes+3)*13-6,219,(last_task_count+3)*13+3);
   }
-  window(18,1,35,2+gr.processes);
+  window(18,1,35,5+gr.processes);
+  
+  if(table_entries<16)
+    table_entries++;
+  for(byte i=1;i<table_entries;i++){
+    memory_table[i]=memory_table[i-1]; // build table of free RAM counts
+  }
+  memory_table[0]=map(free_mem, 0, 4096, 0, 48);
+
+  //  ... and now display it
+  vga.set_color(2);
+  for(byte i=0;i<table_entries;i++){
+    vga.pixel(210-i,30+memory_table[i]);
+  }
+
+  
   for(int i=0;i<gr.processes&&i<8;i++){
     if(task_sel==i)
       vga.set_color(3);
     else
       vga.set_color(2);
-    vga.set_cursor_pos(18,1+i);
+    vga.set_cursor_pos(18,4+i);
     vga.print(48+i);
     if(sel_process!=i)
       vga.print(':');
@@ -157,9 +175,9 @@ void taskfu(){
     }
   }
   vga.set_color(3);
-  vga.set_cursor_pos(18,1+gr.processes);
-  vga.print(F("Free RAM : "));
-  vga.print(String(freeRam()));
+  vga.set_cursor_pos(18,4+gr.processes);
+  vga.print("Free RAM : ");
+  vga.print(String(free_mem));
   last_task_time=millis()+1000;
   last_task_count=gr.processes;
 }

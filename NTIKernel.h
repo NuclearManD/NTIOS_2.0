@@ -387,6 +387,18 @@ void X_SERVER(){
   stdo("Starting GUI...\n");
   __redraw[gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER)]=true;
   vga.clear();
+
+  // set color scheme
+  
+  vga.block_color(0x01,0);
+  vga.block_color(0x41,0b00111111);
+  vga.block_color(0x81,0b00000011);
+  vga.block_color(0xC1,0b00011000);
+  int quepie=vga.x_tiles()*vga.y_tiles();
+  for(int i=0;i<quepie;i++){
+    vga.tile_color(i,1);
+  }
+  
   for(byte i=0;i<gr.processes;i++){
     gr.ftimes[i]=millis()+gr.fupd_rate;
   }
@@ -405,6 +417,9 @@ void X_SERVER(){
       sel_process=0;
       sw_gui(0);
     }
+  }
+  for(int i=0;i<quepie;i++){
+    vga.tile_color(i,0);
   }
   vga.clear();
   stdo=stdo_tmp;
