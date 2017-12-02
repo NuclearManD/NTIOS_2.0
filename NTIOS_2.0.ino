@@ -4,44 +4,36 @@
 void setup() {
   // put your setup code here, to run once:
   k_init();
-  vga.println("System is booting with GEAR...");
-  __redraw[gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER)]=true;
-  //println("Starting system processes...");
-  //gr.addProcess(__empty,usage_daemon,(char*)"daemon0",P_ROOT);
-  vga.println("Setup done, please wait...");
-  vga.println("Any key to open shell.");
-  while(!kbd.available());
-  kbd.read();
+  stdo=term_print;
+  stde=term_error;
+  char term_cmd[64];
+  vga.set_cursor_pos(0,0);
   vga.clear();
-  for(byte i=0;i<gr.processes;i++){
-    gr.ftimes[i]=millis()+gr.fupd_rate;
-  }
-  stdo=(void (*)(const char*))noprnt;
-  stde=(void (*)(const char*))noprnt;
-  File r = SD.open("pgm.bas",FILE_WRITE);
-  r.println("print \"Hello World!\"");
-  r.close();
-  randomSeed(millis()+analogRead(A5));
+  vga.set_color(1);
+  vga.println("NTIOS");
+  vga.print("/$ ");
 }
-
+char loop_term_cmd[64];
+unsigned short loop_term_cnt=0;
 void loop() {
-  gr.run();
-  if(gr.processes==0){
-    vga.clear();
-    vga.set_color(2);
-    vga.println(F("Computer has crashed:\n  No more running processes.\n  Any key to reset arduino."));
-    while(kbd.available())kbd.read();
-    while(!kbd.available());
-    reset();
-  }
   if(kbd.available()){
-    last_key=kbd.read();
-    randomSeed(millis()*last_key);
-  }else
-    last_key=0;
-  if(sel_process>=gr.processes){
-    sel_process=0;
-    sw_gui(0);
+    char c=kbd.read();
+    if((c=='\n')||(c=='\r')){
+      loop_term_cmd[loop_term_cnt]=0;
+      vga.print('\r');
+      system(loop_term_cmd);
+      vga.set_color(1);
+      loop_term_cnt=0;
+      vga.print(term_curdir.c_str());
+      vga.print("$ ");
+    }else if(c==PS2_BACKSPACE){
+      vga.print(c);
+      loop_term_cnt--;
+    }else{
+      loop_term_cmd[loop_term_cnt]=c;
+      loop_term_cnt++;
+      vga.print(c);
+    }
   }
 }
 bool dir=false;
@@ -321,7 +313,8 @@ void term(){
           system(term_cmd);
           vga.set_color(1);
           term_cnt=0;
-          vga.print("> ");
+          vga.print(term_curdir.c_str());
+          vga.print("$ ");
         }else if(c==PS2_BACKSPACE){
           vga.print(c);
           term_cnt--;

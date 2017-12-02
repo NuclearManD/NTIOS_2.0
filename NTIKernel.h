@@ -375,6 +375,45 @@ char* fileChooser(char* cd="/"){ // use char* for compatibility
   gear_stopwait();
   return curdir.c_str();
 }
+void shell_upd();
+void shell_fup();
+boolean x_server_running=false;
+void X_SERVER(){
+  x_server_running=true;
+  void (*stdo_tmp)(const char*)=stdo;
+  void (*stde_tmp)(const char*)=stde;
+  stdo=(void (*)(const char*))noprnt;
+  stde=(void (*)(const char*))noprnt;
+  stdo("Starting GUI...\n");
+  __redraw[gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER)]=true;
+  //stdo("Setup done, please wait...\n");
+  stdo("Any key to open GUI.");
+  while(!kbd.available());
+  kbd.read();
+  vga.clear();
+  for(byte i=0;i<gr.processes;i++){
+    gr.ftimes[i]=millis()+gr.fupd_rate;
+  }
+  while(x_server_running){
+    gr.run();
+    if(gr.processes==0){
+      vga.clear();
+      stdo=stdo_tmp;
+      stde=stde_tmp;
+      stde("GUI has crashed: No more running processes.\n");
+      break;
+    }
+    if(kbd.available()){
+      last_key=kbd.read();
+      randomSeed(millis()*last_key);
+    }else
+      last_key=0;
+    if(sel_process>=gr.processes){
+      sel_process=0;
+      sw_gui(0);
+    }
+  }
+}
 bool term_force=false;
 void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
   char* args[10];
@@ -526,6 +565,15 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
       if(!term_curdir.endsWith("/"))
         term_curdir+='/';
     }
+  }else if(!strcmp(args[0],"logout")){
+    x_server_running=false;
+    stdo("Closing GUI...");
+    for(byte i=0;i<gr.processes;i++){
+      gr.__A_KILL(i);
+    }
+    gr.p_perms[39]=0xFF;
+  }else if(!strcmp(args[0],"startx")){
+    X_SERVER();
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
     stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list\n  dir : list files");
@@ -541,6 +589,7 @@ nonewline:
 }
 void k_init() {
   vga.begin();
+  randomSeed(millis()+analogRead(A5));
   stdo=term_print;
   stde=term_error;
   stdo("Loading...\n");
