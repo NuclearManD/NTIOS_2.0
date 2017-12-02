@@ -386,10 +386,6 @@ void X_SERVER(){
   stde=(void (*)(const char*))noprnt;
   stdo("Starting GUI...\n");
   __redraw[gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER)]=true;
-  //stdo("Setup done, please wait...\n");
-  stdo("Any key to open GUI.");
-  while(!kbd.available());
-  kbd.read();
   vga.clear();
   for(byte i=0;i<gr.processes;i++){
     gr.ftimes[i]=millis()+gr.fupd_rate;
@@ -397,10 +393,7 @@ void X_SERVER(){
   while(x_server_running){
     gr.run();
     if(gr.processes==0){
-      vga.clear();
-      stdo=stdo_tmp;
-      stde=stde_tmp;
-      stde("GUI has crashed: No more running processes.\n");
+      alert("No more processes!");
       break;
     }
     if(kbd.available()){
@@ -413,6 +406,10 @@ void X_SERVER(){
       sw_gui(0);
     }
   }
+  vga.clear();
+  stdo=stdo_tmp;
+  stde=stde_tmp;
+  stde("GUI terminated.\n");
 }
 bool term_force=false;
 void Nsystem(char* inp,char* curdir=term_curdir.c_str()){

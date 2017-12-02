@@ -4,6 +4,7 @@
 void setup() {
   // put your setup code here, to run once:
   k_init();
+  vga.block_color(0xE0,3);
   stdo=term_print;
   stde=term_error;
   char term_cmd[64];
@@ -27,8 +28,10 @@ void loop() {
       vga.print(term_curdir.c_str());
       vga.print("$ ");
     }else if(c==PS2_BACKSPACE){
-      vga.print(c);
-      loop_term_cnt--;
+      if(loop_term_cnt>0){
+        vga.print(c);
+        loop_term_cnt--;
+      }
     }else{
       loop_term_cmd[loop_term_cnt]=c;
       loop_term_cnt++;
@@ -37,10 +40,10 @@ void loop() {
   }
 }
 bool dir=false;
-String apps[5]=   {"TaskMan" ,"reboot", "cmd",  "creeperface","EDIT"};
+String apps[5]=   {"TaskMan" ,"reboot", "exit GUI",  "creeperface","EDIT"};
 void (*upd[5])()= {taskupd   ,__empty , __empty,cp_upd,edit_upd};
 void (*fupd[5])()={taskfu    ,__empty , __empty,cp_fup,edit_fup};
-void (*stp[5])()= {__empty   ,0       , term,   cp_strt,edit_start};//,__q,__q,__q};
+void (*stp[5])()= {__empty   ,0       , logout_func,   cp_strt,edit_start};//,__q,__q,__q};
 byte napps=5;
 void shell_fup(){
   if(sel_process==0){
@@ -289,45 +292,8 @@ void cp_fup(){
     __redraw[i]=true;
 }
 unsigned short term_cnt=0;
-void term(){
-  if(!okcancel("CMD needs to stop GEAR.")){
-    gr.kill(gr.cprocess); // die, it canceled.
-    return;
-  }else{
-    stdo=term_print;
-    stde=term_error;
-    char term_cmd[64];
-    vga.set_cursor_pos(0,0);
-    vga.clear();
-    vga.set_color(1);
-    vga.println("Terminal Started.\nLeave with 'exit -L'");
-    vga.print("> ");
-    while(true){
-      if(kbd.available()){
-        char c=kbd.read();
-        if((c=='\n')||(c=='\r')){
-          term_cmd[term_cnt]=0;
-          if(!strcmp(term_cmd,"exit -L"))
-            break;
-          vga.print('\r');
-          system(term_cmd);
-          vga.set_color(1);
-          term_cnt=0;
-          vga.print(term_curdir.c_str());
-          vga.print("$ ");
-        }else if(c==PS2_BACKSPACE){
-          vga.print(c);
-          term_cnt--;
-        }else{
-          term_cmd[term_cnt]=c;
-          term_cnt++;
-          vga.print(c);
-        }
-      }
-    }
-  }
-  gr.kill(gr.processes-1);// stop
-  gear_stopwait();// fix GEAR
+void logout_func(){
+  system("logout");
 }
 void edit_start(){
   fileChooser();
