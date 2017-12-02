@@ -283,7 +283,7 @@ void print(char q){
       vga.print(q);
   }else
     term_y++;
-}
+}/*
 char* fileChooser(char* cd="/"){ // use char* for compatibility
   String curdir=cd;             // allocate on stack for best performance
   //char* last_working_dir=curdir.c_str();
@@ -297,13 +297,7 @@ char* fileChooser(char* cd="/"){ // use char* for compatibility
       vga.set_color(2);
     vga.set_cursor_pos(1,1);
     vga.print(curdir.c_str());
-    if(SD.exists(curdir.c_str()))
-      dir = SD.open(curdir.c_str());
-    //if(!SD.exists(curdir.c_str())){//!dir){
-    //  dir = SD.open(last_working_dir);
-    //}else
-    //  dir = SD.open(curdir.c_str());//last_working_dir=curdir.c_str();
-    if(SD.exists(curdir.c_str())||curdir.equals("/")){
+    if(SD.exists(curdir.c_str())){
       dir = SD.open(curdir.c_str());
       for(byte i=1;i<9;i++) {
         vga.set_cursor_pos(1,i+1);
@@ -376,7 +370,7 @@ char* fileChooser(char* cd="/"){ // use char* for compatibility
   vga.fill_box(22,33,117,68);
   gear_stopwait();
   return curdir.c_str();
-}
+}*/
 void shell_upd();
 void shell_fup();
 boolean x_server_running=false;
@@ -387,6 +381,7 @@ void X_SERVER(){
   stdo=(void (*)(const char*))noprnt;
   stde=(void (*)(const char*))noprnt;
   stdo("Starting GUI...\n");
+  gr.processes=0;
   __redraw[gr.addProcess(shell_upd,shell_fup,(char*)"Shell",__empty,P_ROOT|P_KILLER)]=true;
   vga.clear();
 
@@ -400,7 +395,6 @@ void X_SERVER(){
   for(int i=0;i<quepie;i++){
     vga.tile_color(i,1);
   }
-  
   for(byte i=0;i<gr.processes;i++){
     gr.ftimes[i]=millis()+gr.fupd_rate;
   }
@@ -412,7 +406,7 @@ void X_SERVER(){
     }
     if(kbd.available()){
       last_key=kbd.read();
-      randomSeed(millis()*last_key);
+      randomSeed(millis()*last_key+analogRead(A0));
     }else
       last_key=0;
     if(sel_process>=gr.processes){
@@ -493,42 +487,9 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
     vga.set_cursor_pos(0,0);
     vga.clear();
     return; // escape newline
-  }else if(!strcmp(args[0],"lsdev")){
-    // list devices
-    stdo(" 0 PS2 Keyboard\n 1 ");
-    stdo(vga.get_card_ver());
-    //stdo("\n 2 RAM_32K");
-    stdo("\n 3 SD card");
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
-  }else if(!strcmp(args[0],"do")){
-    if(!(term_force||(gr.p_perms[gr.cprocess]&P_ROOT)==P_ROOT)){//cnt<3){
-      stde("Root privladges required.");//"Usage: do (dev id) (func) [args...]");
-    }else{
-      byte dev=to_int(args[1]);
-      if(dev==0)
-        stde("This device hasn't any functions.");
-      else if(dev==1){
-        if(!strcmp(args[2],"cls"))
-          vga.clear();
-        else if(!strcmp(args[2],"reset"))
-          stde("Not yet implimented.");
-        else
-          stde("Function non existent.");
-      }else if(dev==2){
-        if(!strcmp(args[2],"reset")){
-        }else
-          stde("Function non existent.");
-      }else if(dev==3){
-        if(!strcmp(args[2],"mount")){
-          if(mount()){
-            
-          }
-        }else
-          stde("Function non existent.");
-      }
-    }
   }else if(!strcmp(args[0],"dir")){
     if(!sd_mounted){
       stde("No SD card mounted.");
@@ -589,9 +550,11 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
     gr.p_perms[39]=0xFF;
   }else if(!strcmp(args[0],"startx")){
     X_SERVER();
+  }else if(!strcmp(args[0],"reboot")){
+    asm volatile ("  jmp 0");  
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
-    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  do [dev] [cmd] <more>\n  lsdev : device list\n  dir : list files");
+    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  dir : list files\n");
   }else if((args[0][0]=='.')&&(args[0][1]=='/')){
     exec_file(args[0]+2);
   }else{

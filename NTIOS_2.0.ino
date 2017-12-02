@@ -314,7 +314,7 @@ void logout_func(){
   system("logout");
 }
 void edit_start(){
-  fileChooser();
+  //fileChooser();
 }
 void edit_upd(){
   
