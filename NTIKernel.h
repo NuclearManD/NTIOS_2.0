@@ -328,6 +328,7 @@ char* fileChooser(char* cd="/"){ // use char* for compatibility
         }
         entry.close();
       }
+      dir.close();
     }
     while(!kbd.available());
     uint16_t c=kbd.read();
@@ -365,6 +366,7 @@ char* fileChooser(char* cd="/"){ // use char* for compatibility
           curdir+='/';
         }
         entry.close();
+        dir.close();
         sel=0;
       }
     }
@@ -550,6 +552,7 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
         }
         entry.close();
       }
+      dir.close();
     }
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){

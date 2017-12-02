@@ -130,7 +130,7 @@ void shell_upd(){
 long last_task_time=0;
 byte last_task_count=0;
 byte task_sel=0;
-int memory_table[16];
+byte memory_table[16];
 byte table_entries=0;
 void taskfu(){
   int free_mem=freeRam();// get at the top for most accurate results
@@ -139,13 +139,13 @@ void taskfu(){
     return;
   if(last_task_count>gr.processes){
     vga.set_color(0);
-    vga.fill_box(112,(gr.processes+3)*13-6,219,(last_task_count+3)*13+3);
+    vga.fill_box(112,(gr.processes+6)*13-6,219,(last_task_count+6)*13+3);
   }
   window(18,1,35,5+gr.processes);
   
   if(table_entries<16)
     table_entries++;
-  for(byte i=1;i<table_entries;i++){
+  for(byte i=table_entries;i>0;i--){
     memory_table[i]=memory_table[i-1]; // build table of free RAM counts
   }
   memory_table[0]=map(free_mem, 0, 4096, 0, 48);
@@ -153,7 +153,7 @@ void taskfu(){
   //  ... and now display it
   vga.set_color(2);
   for(byte i=0;i<table_entries;i++){
-    vga.pixel(210-i,30+memory_table[i]);
+    vga.fill_box(200-i*3,25+memory_table[i],203-i*3,27+memory_table[i]);
   }
 
   
