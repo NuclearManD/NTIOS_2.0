@@ -1,3 +1,5 @@
+#ifndef NTI_KERNEL_H
+#define NTI_KERNEL_H
 #pragma GCC diagnostic warning "-fpermissive"
 //#pragma GCC diagnostic warning "-pedantic"
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -36,6 +38,7 @@ void (*stde)(char*)=noprnt;
 #ifdef USE_CYRILLIC
 #include "Cyrillic.h"//  include here for dependencies
 #endif
+#include "micro.h"
 void term_close(){
   term_opn=false;
   term_y=0;
@@ -423,6 +426,7 @@ void X_SERVER(){
   stde("GUI terminated.\n");
 }
 bool term_force=false;
+
 void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
   char* args[10];
   byte cnt=1;
@@ -495,6 +499,7 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
       stde("No SD card mounted.");
     }else{
       File dir = SD.open(curdir);
+      dir.rewindDirectory();
       while (true) {
         File entry =  dir.openNextFile();
         if (! entry) {
@@ -514,6 +519,15 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
         entry.close();
       }
       dir.close();
+    }
+  }else if(!strcmp(args[0],"micro")){
+    if(cnt<2){
+      stde("Usage: micro file");
+    }else{
+      char qu[32];
+      strcpy(qu,curdir);
+      strcat(qu,args[1]);
+      micro_edit(qu);
     }
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
@@ -584,3 +598,4 @@ void k_init() {
   #endif
   stdo("Entering user mode...\r");
 }
+#endif

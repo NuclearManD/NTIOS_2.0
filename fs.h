@@ -1,4 +1,5 @@
-
+#ifndef SDFS_H
+#define SDFS_H
 #include <SPI.h>
 #include <SD.h>
 //#include "ROM_fs.h"
@@ -15,3 +16,4 @@ char* curdir;
 void init_fs(){
   curdir="/";
 }
+#endif

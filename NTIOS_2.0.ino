@@ -1,6 +1,8 @@
 #pragma GCC diagnostic warning "-fpermissive"
 //#pragma GCC diagnostic warning "-pedantic"
 #include "NTIKernel.h"
+#define TERM_KBD_BUF 28
+long timer;
 void setup() {
   // put your setup code here, to run once:
   k_init();
@@ -12,11 +14,15 @@ void setup() {
   vga.set_color(1);
   vga.println("NTIOS");
   vga.print("/$ ");
+  timer=millis();
 }
-char loop_term_cmd[64];
+char loop_term_cmd[TERM_KBD_BUF];
 unsigned short loop_term_cnt=0;
+boolean curs_state=false; // false means cursur not showing, true means it is.
 void loop() {
   if(kbd.available()){
+    if(curs_state)
+      vga.print((char)8);
     char c=kbd.read();
     if((c=='\n')||(c=='\r')){
       loop_term_cmd[loop_term_cnt]=0;
@@ -32,10 +38,22 @@ void loop() {
         loop_term_cnt--;
       }
     }else{
-      loop_term_cmd[loop_term_cnt]=c;
-      loop_term_cnt++;
-      vga.print(c);
+      if(loop_term_cnt<TERM_KBD_BUF){
+        loop_term_cmd[loop_term_cnt]=c;
+        loop_term_cnt++;
+        vga.print(c);
+      }
     }
+    if(curs_state)
+      vga.print('_');
+  }
+  if(timer+250<millis()){
+    timer=millis();
+    curs_state=!curs_state;
+    if(curs_state)
+      vga.print('_');
+    else
+      vga.print((char)8);
   }
 }
 bool dir=false;
@@ -155,7 +173,6 @@ void taskfu(){
   for(byte i=0;i<table_entries;i++){
     vga.fill_box(200-i*3,25+memory_table[i],203-i*3,27+memory_table[i]);
   }
-
   
   for(int i=0;i<gr.processes&&i<8;i++){
     if(task_sel==i)
