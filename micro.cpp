@@ -31,6 +31,24 @@ boolean print_char(char c,boolean scroll=false){
   return true;
 }
 int pos_in_file=0;// stores the beginning of the top line of the current window
+void fix_screen_position(char* data, int begin){
+  int numy=0,numx=0;
+  for(int i=0;data[i]!=0&&i<begin;i++){
+    if(data[i]=='\n'||data[i]=='\r'){
+      numy++;
+      numx=0;
+    }else
+      numx++;
+  }
+  while(numy>cursy+SCREEN_Y_CHARS)
+    cursy++;
+  while(numy<cursy)
+    cursy--;
+  while(numx>cursx+SCREEN_X_CHARS)
+    cursx++;
+  while(numx<cursx)
+    cursx--;
+}
 void print_file(char* f){
   vga.clear();
   vga.set_cursor_pos(cursx,cursy);
