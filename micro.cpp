@@ -30,15 +30,27 @@ boolean print_char(char c,boolean scroll=false){
   }
   return true;
 }
-void print_file(File f){
+int pos_in_file=0;// stores the beginning of the top line of the current window
+void print_file(char* f){
   vga.clear();
   vga.set_cursor_pos(cursx,cursy);
-  f.seek(file_index);
-  while(f.available()){
-    if(!print_char(f.read()))
+  int loc=file_index;
+  cursor_dirty=false;
+  
+  for(loc;loc>0&&f[loc]!='\n';loc--);// goto beginning of current line
+  
+  int tcx,tcy;// temporary cursor positions
+  while(f[loc]!=0){
+    if(!print_char(f[loc]))
       break;
-    file_index++;
+    loc++;
+    if(file_index==loc){
+      tcx=cursx;
+      tcy=cursy;
+    }
   }
+  cursx=tcx;
+  cursy=tcy;
 }
 void micro_edit(char* name){
   if(!SD.exists(name)){
@@ -46,9 +58,21 @@ void micro_edit(char* name){
     vga.println(" does not exist.");
     return;
   }
-  cursx=cursy=0;
+  pos_in_file=cursx=cursy=0; // reset everything to top of file
   File file=SD.open(name);
-  print_file(file);
+  if(file.size()+256<freeRam()){
+    vga.println("Not enough memory!");
+    file.close();
+    return;
+  }
+  char data[file.size()+freeRam()-256];// use as much RAM as is safe
+  file.close();
+  int index=0;
+  while(file.available()){
+    data[index]=file.read();
+    index++;
+  }
+  print_file((char*)data);
   boolean curs_state=false;
   long curs_time=millis()+250;
   file_index=0;
@@ -58,8 +82,22 @@ void micro_edit(char* name){
     if(kbd.available()){
       char c=kbd.read();
       if(c==PS2_ESC){
-        file.close();
         break;
+      if(c==PS2_LEFTARROW){
+        if(file_index>0){
+          file_index--;
+          print_file(file);
+        }
+      }else if(c==PS2_RIGHTARROW){
+        if(file_index<index){// index is file length
+          file_index++;
+          print_file(file);
+        }
+      }else if(c==8){
+        
+      }else{
+        
+      }
       }
     }
     if(curs_time<millis()){
@@ -82,3 +120,4 @@ void micro_edit(char* name){
   file.close();
   vga.clear();
 }
+
