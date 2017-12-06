@@ -76,20 +76,20 @@ void micro_edit(char* name){
     vga.println(" does not exist.");
     return;
   }
-  pos_in_file=cursx=cursy=0; // reset everything to top of file
   File file=SD.open(name);
-  if(file.size()+256<freeRam()){
+  if(file.size()+256<freeRam()/2){
     vga.println("Not enough memory!");
     file.close();
     return;
   }
-  char data[file.size()+freeRam()-256];// use as much RAM as is safe
-  file.close();
+  char data[file.size()+freeRam()/2-256];// use as much RAM as is safe
   int index=0;
   while(file.available()){
     data[index]=file.read();
     index++;
   }
+  file.close();
+  pos_in_file=cursx=cursy=0; // reset everything to top of file
   print_file((char*)data);
   boolean curs_state=false;
   long curs_time=millis()+250;
@@ -101,21 +101,29 @@ void micro_edit(char* name){
       char c=kbd.read();
       if(c==PS2_ESC){
         break;
-      if(c==PS2_LEFTARROW){
+      }if(c==PS2_LEFTARROW){
         if(file_index>0){
           file_index--;
-          print_file(file);
+          print_file(data);
         }
       }else if(c==PS2_RIGHTARROW){
         if(file_index<index){// index is file length
           file_index++;
-          print_file(file);
+          print_file(data);
         }
       }else if(c==8){
-        
+        file_index--;
+        index--; // file is one byte shorter
+        strcpy(data+file_index,data+file_index+1);
+        print_file(data);
       }else{
-        
-      }
+        file_index++;
+        index++;// file is one byte longer
+        for(int i=index+1;i>file_index;i--){
+          data[i]=data[i-1];
+        }
+        data[file_index]=c;
+        print_file(data);
       }
     }
     if(curs_time<millis()){

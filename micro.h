@@ -6,5 +6,6 @@
 #include <SD.h>
 extern NMT_GFX vga;
 extern PS2Keyboard kbd;
+extern int freeRam();
 void micro_edit(char* name);
 #endif
