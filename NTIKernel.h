@@ -9,8 +9,7 @@
 #endif
 #include "basic.h"
 char* substr(char* arr, int begin, int len);
-String term_curdir="/";
-void Nsystem(char* inp,char* curdir=term_curdir.c_str());
+void Nsystem(char* inp);
 unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
@@ -18,7 +17,6 @@ unsigned short len(char* d);
 #include <NMT_GFX.h>
 #include <GEAR.h>
 #include <PS2Keyboard.h>
-#include "fs.h"
 int rows, cols;
 #define system Nsystem
 GearControl gr;
@@ -38,6 +36,7 @@ void (*stde)(char*)=noprnt;
 #ifdef USE_CYRILLIC
 #include "Cyrillic.h"//  include here for dependencies
 #endif
+#include "fs.h"
 #include "micro.h"
 void term_close(){
   term_opn=false;
@@ -427,11 +426,14 @@ void X_SERVER(){
 }
 bool term_force=false;
 
-void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
+char buf_0x10[256];
+
+void Nsystem(char* inp){
   char* args[10];
   byte cnt=1;
-  char* src=(char*)malloc(len(inp)+1);
+  char* src=buf_0x10;
   args[0]=src;
+  Serial.print("Executing command sequence [");
   for(unsigned short i=0; i<len(inp); i++){
     char c=inp[i];
     if(c!=' ')
@@ -439,6 +441,8 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
     else{
       src[i]=0;
       args[cnt]=(char*)(i+1+(unsigned short)src);
+      Serial.print(args[cnt]);
+      Serial.print(" ");
       cnt++;
       while(inp[i+1]==' ')
         i++;
@@ -486,7 +490,7 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
       stdo("Success.");
     else
       stde("Unknown Error.");
-    kbd.begin(22, 21);
+    kbd.begin(4, 2);
   }else if(!strcmp(args[0],"cls")){
     vga.set_cursor_pos(0,0);
     vga.clear();
@@ -498,10 +502,16 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
     if(!sd_mounted){
       stde("No SD card mounted.");
     }else{
+      Serial.print("Opening directory ");
+      Serial.println(curdir);
       File dir = SD.open(curdir);
+      Serial.println("Rewinding directory...");
       dir.rewindDirectory();
       while (true) {
+        Serial.println("Opening next file...");
         File entry =  dir.openNextFile();
+        Serial.print("Opened ");
+        Serial.println(entry.name());
         if (! entry) {
           break;
         }
@@ -518,42 +528,45 @@ void Nsystem(char* inp,char* curdir=term_curdir.c_str()){
         }
         entry.close();
       }
+      Serial.println("Done. Closing directory...");
       dir.close();
+      Serial.println("Command complete.");
     }
   }else if(!strcmp(args[0],"micro")){
     if(cnt<2){
-      stde("Usage: micro file");
+      stde("Usage: micro [file]");
     }else{
-      char qu[32];
-      strcpy(qu,curdir);
-      strcat(qu,args[1]);
-      micro_edit(qu);
+      micro_edit(fs_resolve(args[1]));
     }
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
       stde("Usage: cd directory");
     }else{
-      if(args[1][0]=='/'){
-        File f=SD.open(args[1]);
-        if(f&&f.isDirectory()){
-          term_curdir=args[1];
-          goto nonewline;
-        }else
-          stde("Not a directory.");
+      Serial.print("Checking directory ");
+      Serial.println(fs_resolve(args[1]));
+      File f=SD.open(fs_resolve(args[1]));
+      if(f&&f.isDirectory()){
+        strcpy(curdir,fs_resolve(args[1]));
+        Serial.println("Valid.");
         f.close();
-      }else{
-        File f=SD.open((term_curdir+args[1]).c_str());
-        if(f&&f.isDirectory()){
-          term_curdir+=args[1];
-          goto nonewline;
-        }else{
-          stde("Not a directory: ");
-          stde((term_curdir+args[1]).c_str());
-        }
-        f.close();
+        goto nonewline;
       }
-      if(!term_curdir.endsWith("/"))
-        term_curdir+='/';
+      stde("Not a directory: ");
+      stde(fs_resolve(args[1]));
+      Serial.println("Invalid.  Closing...");
+      f.close();
+    }
+  }else if(!strcmp(args[0],"mkdir")){
+    if(cnt<2)
+      stde("Usage: mkdir [directory name]");
+    else{
+      stdo("creating directory ");
+      stdo(fs_resolve(args[1]));
+      stdo("...\r");
+      if(!mkdir(args[1])){
+        stde("Error creating ");
+        stde(fs_resolve(args[1]));
+      }
     }
   }else if(!strcmp(args[0],"logout")){
     x_server_running=false;
@@ -580,22 +593,29 @@ nonewline:
   free(src);
 }
 void k_init() {
-  vga.begin();
+  Serial.begin(9600);
+  Serial.println("Debugging on this port.");
+  vga.begin(11,10);
   randomSeed(millis()+analogRead(A5));
   stdo=term_print;
   stde=term_error;
   stdo("Loading...\n");
-  if(mount())
+  init_fs();
+  if(mount()){
     stdo("Mounted SD card.\r");
-  else
+    Serial.println("SD card mounted.");
+  }else{
     stde("Failed to mount SD card.\r");
-  kbd.begin(22, 21);
+    Serial.println("SD card failed to mount.");
+  }
+  kbd.begin(4, 2);
   stdo("Loaded keyboard.\r");
-  rows=vga.y_tiles()*16;
-  cols=vga.x_tiles()*16;
+  rows=256;//vga.y_tiles()*16;
+  cols=18*16;//vga.x_tiles()*16;
   #ifdef USE_CYRILLIC
   alph_setcurs(0,0);
   #endif
   stdo("Entering user mode...\r");
+  Serial.println("Entering user mode...");
 }
 #endif
