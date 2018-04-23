@@ -41,9 +41,9 @@ void setup_basic(void (println_f)(char*)){
 }
 // ONLY USE LETTERS!
 boolean strcmpignorecase(char* a, char* b){
-  for(int i=0;a[i-1]!=0;i++){
+  for(int i=0;a[i]!=0&&b[i]!=0;i++){
     // mask off 0x20, it makes lower case letters
-    if((a[i]&0xDF)!=(b[i]&0xDF))
+    if((a[i]&(char)0xDF)!=(b[i]&(char)0xDF))
       return true;
   }
   return false;
@@ -368,7 +368,7 @@ int resolveOne(byte* code, int* count, char** varnames, int* varvals, byte* num_
     return 0;
   byte cmd=code[count[0]];
   count[0]++;
-  char tmp[100];
+  char tmp[64];
   int i_qte=0;
   byte index=0;
   boolean found=false; // search for variable to see if it is already defined

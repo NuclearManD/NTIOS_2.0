@@ -50,40 +50,6 @@ void term_error(char* d){
   vga.print(d);
   vga.set_color(1);
 }
-int exec_file(char* name){
-  if(!sd_mounted){
-    stde("No storage.");
-    return 0;
-  }
-  char* data;
-  char compiled[256];
-  int length;
-  File f=SD.open(name,FILE_READ);
-  if(!strcmp(name+len(name)-3,"BIN")){
-    length=f.size();
-    byte i=0;
-    while (f.available()) {
-      compiled[i]=(f.read());
-      i++;
-    }
-  }else{
-    data=malloc(f.size()+1);
-    byte i=0;
-    while (f.available()) {
-      data[i]=(f.read());
-      i++;
-    }
-    data[i]=0;
-    length=compile(data,compiled);
-    if(length=-1){
-      return;
-    }
-    free(data);
-  }
-  f.close();
-  setup_basic(stdo);
-  return executeCompiledCode(compiled, length);
-}
 char* hexchars="0123456789ABCDEF";
 char* int_to_str(int i){
   char* o=malloc(5);
@@ -93,6 +59,55 @@ char* int_to_str(int i){
   o[3] = hexchars[i & 0xF];
   o[4]=0;
   return o;
+}
+int exec_file(char* name){
+  if(!sd_mounted){
+    stde("No storage.");
+    return 0;
+  }
+  char* data;
+  char compiled[256];
+  int length;
+  File f=SD.open(name,FILE_READ);
+  if(!f){
+    stde("File not found!");
+    return -1;
+  }
+  Serial.println(name+len(name)-3);
+  if(!strcmpignorecase(name+len(name)-3,"BIN")){
+    length=f.size();
+    Serial.println(length);
+    byte i=0;
+    while (f.available()) {
+      compiled[i]=(f.read());
+      Serial.write(hexchars[15&(compiled[i]>>4)]);
+      Serial.write(hexchars[compiled[i]&15]);
+      i++;
+    }
+    Serial.println();
+  }else{
+    Serial.println("compiling basic...");
+    data=malloc(f.size()+1);
+    byte i=0;
+    while (f.available()) {
+      data[i]=(f.read());
+      i++;
+    }
+    data[i]=0;
+    length=compile(data,compiled);
+    for(int i=0;i<length;i++){
+      Serial.write(hexchars[15&(compiled[i]>>4)]);
+      Serial.write(hexchars[compiled[i]&15]);
+    }
+    free(data);
+    if(length==-1){
+      stde("Compiler Error");
+      return;
+    }
+  }
+  f.close();
+  setup_basic(stdo);
+  return executeCompiledCode(compiled, length);
 }
 int freeRam() {
   extern int __heap_start, *__brkval; 
@@ -370,7 +385,7 @@ void Nsystem(char* inp){
     if(cnt<2)
       stde("Usage: bc [infile] (outfile)");
     else{
-      File f=SD.open(fs_resolve(args[1]),FILE_READ);
+      File f=SD.open(fs_resolve(args[1]));
       if(f&&!f.isDirectory()){
         byte oname[64];
         if(cnt>2)
@@ -382,9 +397,23 @@ void Nsystem(char* inp){
           i++;
           strcpy(oname+i,"BIN");
         }
-        File o=SD.open(fs_resolve(oname),FILE_WRITE);
+        File o=SD.open(fs_resolve(oname),O_WRITE | O_CREAT | O_TRUNC);
         if(o){
-          compile(f,o);
+          byte* data=malloc(f.size()+1);
+          byte compiled[256];
+          int i=0;
+          while (f.available()) {
+            data[i]=(f.read());
+            i++;
+          }
+          data[i]=0;
+          int length=compile(data,compiled);
+          free(data);
+          for(int i=0;i<length;i++){
+            Serial.write(hexchars[15&(compiled[i]>>4)]);
+            Serial.write(hexchars[compiled[i]&15]);
+            o.write(compiled[i]);
+          }
           o.close();
         }else{
           stde("Error opening output file ");
