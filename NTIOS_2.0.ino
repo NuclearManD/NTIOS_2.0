@@ -24,10 +24,10 @@ char loop_term_cmd[TERM_KBD_BUF];
 unsigned short loop_term_cnt = 0;
 boolean curs_state = false; // false means cursur not showing, true means it is.
 void loop() {
-  if (kbd.available()) {
+  if (kbd_available()) {
     if (curs_state)
       vga.print((char)8);
-    char c = kbd.read();
+    char c = kbd_read();
     if ((c == '\n') || (c == '\r')) {
       loop_term_cmd[loop_term_cnt] = 0;
       vga.print('\r');
