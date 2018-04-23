@@ -79,7 +79,7 @@ void micro_edit(char* name){
     return;
   }
   File file=SD.open(name);
-  if((file.size()+256)<freeRam()/2){
+  if((file.size()+256)>freeRam()/2){
     vga.println("Not enough memory!");
     file.close();
     return;
@@ -100,8 +100,8 @@ void micro_edit(char* name){
   cursx=cursy=0;
   vga.set_cursor_pos(cursx,cursy);
   while(true){
-    if(kbd.available()){
-      char c=kbd.read();
+    if(kbd_available()){
+      char c=kbd_read();
       if(c==PS2_ESC){
         break;
       }if(c==PS2_LEFTARROW){

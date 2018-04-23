@@ -30,13 +30,14 @@ void (*stde)(char*)=noprnt;
 #endif
 #include <NMT_GFX.h>
 #include <GEAR.h>
+GearControl gr;
+NMT_GFX vga;
 #include <SPI.h>
 #include <SD.h>
 #include "fs.h"
 #include "kbd.h"
 #include "basic.h"
-GearControl gr;
-NMT_GFX vga;
+#include "micro.h"
 void term_close(){
   term_opn=false;
   term_y=0;
@@ -426,6 +427,12 @@ void Nsystem(char* inp){
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
     stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  dir : list files\n");
+  }else if(!strcmp(args[0],"micro")){
+    if(cnt<2)
+      stde("Usage: micro [file]");
+    else{
+      micro_edit(args[1]);
+    }
   }else if((args[0][0]=='.')&&(args[0][1]=='/')){
     exec_file(args[0]+2);
   }else{
