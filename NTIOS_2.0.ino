@@ -16,8 +16,14 @@ void setup() {
   vga.println("NTIOS");
   vga.print(curdir);
   vga.print("$ ");
-
-  
+  char comp[256];
+  char* pgm="print \"Hello WOrld!\"";
+  int len=compile(pgm,comp);
+  Serial.println(len);
+  for(int i=0;i<len;i++){
+    Serial.println((int)comp[i]);
+  }
+  executeCompiledCode(comp, len);
   timer = millis();
 }
 char loop_term_cmd[TERM_KBD_BUF];

@@ -84,13 +84,13 @@ int exec_file(char* name){
   setup_basic(stdo);
   return executeCompiledCode(compiled, length);
 }
+char* hexchars="0123456789ABCDEF";
 char* int_to_str(int i){
   char* o=malloc(5);
-  char* a="0123456789ABCDEF";
-  o[0] = a[(i >> 12) & 0xF];
-  o[1] = a[(i >> 8) & 0xF];
-  o[2] = a[(i >> 4) & 0xF];
-  o[3] = a[i & 0xF];
+  o[0] = hexchars[(i >> 12) & 0xF];
+  o[1] = hexchars[(i >> 8) & 0xF];
+  o[2] = hexchars[(i >> 4) & 0xF];
+  o[3] = hexchars[i & 0xF];
   o[4]=0;
   return o;
 }
@@ -241,6 +241,7 @@ void Nsystem(char* inp){
       File dir = SD.open(curdir);
       Serial.println("Rewinding directory...");
       dir.rewindDirectory();
+      bool empty=true;
       while (true) {
         Serial.println("Opening next file...");
         File entry =  dir.openNextFile();
@@ -249,6 +250,7 @@ void Nsystem(char* inp){
         if (! entry) {
           break;
         }
+        empty=false;
         stdo(entry.name());
         if (entry.isDirectory()) {
           stdo("/\n");
@@ -265,6 +267,9 @@ void Nsystem(char* inp){
       Serial.println("Done. Closing directory...");
       dir.close();
       Serial.println("Command complete.");
+      if(empty){
+        stdo("[directory empty]");
+      }
     }
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
@@ -283,6 +288,60 @@ void Nsystem(char* inp){
       stde(fs_resolve(args[1]));
       Serial.println("Invalid.  Closing...");
       f.close();
+    }
+  }else if(!strcmp(args[0],"cat")){
+    if(cnt<2){
+      stde("Usage: cat file");
+    }else{
+      File f=SD.open(fs_resolve(args[1]));
+      if(f&&!f.isDirectory()){
+        char tmp[16];
+        int i=0;
+        while(f.available()){
+          if(i==15){
+            tmp[i]=0;
+            stdo(tmp);
+            i=0;
+          }
+          tmp[i]=f.read();
+          i++;
+        }
+        tmp[i]=0;
+        stdo(tmp);
+        stdo("\r[end of file]");
+        f.close();
+      }else{
+        stde("Not a file: ");
+        stde(fs_resolve(args[1]));
+      }
+    }
+  }else if(!strcmp(args[0],"hex")){
+    if(cnt<2){
+      stde("Usage: cat file");
+    }else{
+      File f=SD.open(fs_resolve(args[1]));
+      if(f&&!f.isDirectory()){
+        char tmp[34];
+        int i=0;
+        while(f.available()){
+          if(i==32){
+            tmp[i]=0;
+            stdo(tmp);
+            i=0;
+          }
+          byte c=f.read();
+          tmp[i]=hexchars[c>>4];
+          tmp[i+1]=hexchars[c&15];
+          i+=2;
+        }
+        tmp[i]=0;
+        stdo(tmp);
+        stdo("\r[end of file]");
+        f.close();
+      }else{
+        stde("Not a file: ");
+        stde(fs_resolve(args[1]));
+      }
     }
   }else if(!strcmp(args[0],"mkdir")){
     if(cnt<2)
@@ -323,7 +382,7 @@ void Nsystem(char* inp){
           i++;
           strcpy(oname+i,"BIN");
         }
-        File o=SD.open(oname,FILE_WRITE);
+        File o=SD.open(fs_resolve(oname),FILE_WRITE);
         if(o){
           compile(f,o);
           o.close();

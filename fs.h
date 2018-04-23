@@ -24,7 +24,7 @@ char* fs_resolve(char* loc){
   int copied=0;
   int last_index=0;
   if(loc[0]!='/'){
-    for(int i=0;i<=strlen(curdir);i++){
+    for(int i=0;i<=strlen(curdir)-1;i++){
       if(curdir[i]=='/'||curdir[i]==0){
         tmp[copied]=0;
         if(!strcmp(tmp,".")){
