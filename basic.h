@@ -177,150 +177,15 @@ int compile(char* src, char* dst){
       dst[dst_cnt]=CMD_NAME;
       dst_cnt++;
       for(int cx=0;tokens[i][cx]!=0;cx++){
-        dst[dst_cnt]=tokens[i][cx];
-        dst_cnt++;
-      }
-    }
-  }
-  return dst_cnt;
-}
-
-int compile(File in, File dst){
-  if(freeRam()+128<in.size()){
-    stde("Not enough RAM for compile to run.");
-    return -1;
-  }
-  char* src=(char*)malloc(in.size());
-  for(int i=0;i<in.available();i++){
-    src[i]=in.read();
-  }
-  int num_tokens=0;
-  int num_operators=0;
-  boolean in_whitespace=true;
-  boolean in_quote=false;
-  for(int i=0;src[i]!=0;i++){
-    char c=src[i];
-    if(c=='"'){
-      in_quote=!in_quote;
-      num_operators++;
-      in_whitespace=true;
-      num_tokens++;
-      if(in_quote)
-        num_tokens++;
-    }else if(!in_quote){
-      switch(c){
-        case ' ':
-        case '\r':
-        case '\n':
-        case '\t':
-        in_whitespace=true;
-        break;
-        case ';':                           // comments
-          while(src[i]!='\n'&&src[i]!='\r'&&src[i+1]!=0)
-            i++;
-          break;
-        case '/':
-        case '*':
-        case '+':
-        case '-':
-        case '!':
-        case '^':
-        case '=':
-        case '%':
-        case '&':
-        num_tokens++;
-        num_operators++;
-        in_whitespace=true;// emulate whitespace before and after operators
-        break;
-        default:
-          if(in_whitespace)
-            num_tokens++;
-          in_whitespace=false;
-          break;
-      }
-    }
-  }
-  if(!in_whitespace)
-    num_tokens++;
-  char* tokens[num_tokens];
-  char oplist[num_operators*2];
-  int token=0;
-  num_operators=0;
-  in_whitespace=true;
-  in_quote=false;
-  for(int i=0;src[i]!=0;i++){
-    char c=src[i];
-    if(c=='"'){
-      in_quote=!in_quote;
-      in_whitespace=true;// emulate whitespace before and after operators
-      src[i]=0;
-      oplist[num_operators*2]=c;
-      oplist[num_operators*2+1]=0;
-      tokens[token]=oplist+(num_operators<<1);
-      num_operators++;
-      token++;
-      if(in_quote){
-        tokens[token]=src+i+1;
-        token++;
-      }
-    }else if(!in_quote){
-      switch(c){
-        case ' ':
-        case '\r':
-        case '\n':
-        case '\t':
-          in_whitespace=true;
-          src[i]=0;
-          break;
-        case ';':                           // comments
-          while(src[i]!='\n'&&src[i]!='\r'&&src[i+1]!=0)
-            i++;
-          break;
-        case '/':
-        case '*':
-        case '+':
-        case '-':
-        case '!':
-        case '^':
-        case '%':
-        case '&':
-        case '=':
-          in_whitespace=true;// emulate whitespace before and after operators
-          src[i]=0;
-          oplist[num_operators*2]=c;
-          oplist[num_operators*2+1]=0;
-          tokens[token]=oplist+(num_operators<<1);
-          num_operators++;
-          token++;
-          break;
-        default:
-          if(in_whitespace){
-            tokens[token]=src+i;
-            token++;
-            in_whitespace=false;
-          }
-          break;
-      }
-    }
-  }
-  // tokenized.  Now we need to compile it.
-  int dst_cnt=0;
-  for(int i=0;i<num_tokens;i++){
-    boolean found = false;
-    for(byte cx=0;cx<CMD_COUNTER;cx++){
-      //strcpy_P(buffer, (char*)pgm_read_word(&(command_table[cx])));
-      if(!strcmpignorecase(command_table[cx],tokens[i])){
-        found=true;
-        dst.write(cx);
-        dst_cnt++;
-        break;
-      }
-    }
-    if(!found){          // name, not command/operator
-      dst.write(CMD_NAME);
-      dst_cnt++;
-      for(int cx=0;tokens[i][cx]!=0;cx++){
-        dst.write(tokens[i][cx]);
+        char c=tokens[i][cx];
+        if(c=='\\'){
+          cx++;
+          if(tokens[i][cx]=='n')
+            c='\n';
+          else
+            return -1;
+        }
+        dst[dst_cnt]=c;
         dst_cnt++;
       }
     }
