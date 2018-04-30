@@ -51,6 +51,9 @@ void term_error(char* d){
   vga.print(d);
   vga.set_color(1);
 }
+void ser_print(char* d){
+  Serial.print(d);
+}
 char* hexchars="0123456789ABCDEF";
 char* int_to_str(int i){
   char* o=malloc(5);
@@ -326,6 +329,19 @@ void Nsystem(char* inp){
         stdo(tmp);
         stdo("\r[end of file]");
         f.close();
+      }else{
+        stde("Not a file: ");
+        stde(fs_resolve(args[1]));
+      }
+    }
+  }else if(!strcmp(args[0],"del")){
+    if(cnt<2){
+      stde("Usage: del file");
+    }else{
+      File f=SD.open(fs_resolve(args[1]));
+      if(f){
+        f.close();
+        SD.remove(fs_resolve(args[1]));
       }else{
         stde("Not a file: ");
         stde(fs_resolve(args[1]));
