@@ -42,6 +42,12 @@ void term_close(){
   term_opn=false;
   term_y=0;
 }
+void serial_out(char* d){
+  for(int i=0;i<len(d);i++)
+    if(d[i]=='\n')
+      d[i]='\r';
+  Serial.print(d);
+}
 void term_print(char* d){
   vga.set_color(1);
   vga.print(d);
@@ -74,20 +80,20 @@ int exec_file(char* name){
     stde("File not found!");
     return -1;
   }
-  Serial.println(name+len(name)-3);
+  //Serial.println(name+len(name)-3);
   if(!strcmpignorecase(name+len(name)-3,"BIN")){
     length=f.size();
-    Serial.println(length);
+    //Serial.println(length);
     byte i=0;
     while (f.available()) {
       compiled[i]=(f.read());
-      Serial.write(hexchars[15&(compiled[i]>>4)]);
-      Serial.write(hexchars[compiled[i]&15]);
+      //serial.write(hexchars[15&(compiled[i]>>4)]);
+      //serial.write(hexchars[compiled[i]&15]);
       i++;
     }
-    Serial.println();
+    //Serial.println();
   }else{
-    Serial.println("compiling basic...");
+    //Serial.println("compiling basic...");
     data=malloc(f.size()+1);
     byte i=0;
     while (f.available()) {
@@ -97,8 +103,8 @@ int exec_file(char* name){
     data[i]=0;
     length=compile(data,compiled);
     for(int i=0;i<length;i++){
-      Serial.write(hexchars[15&(compiled[i]>>4)]);
-      Serial.write(hexchars[compiled[i]&15]);
+      //serial.write(hexchars[15&(compiled[i]>>4)]);
+      //serial.write(hexchars[compiled[i]&15]);
     }
     free(data);
     if(length==-1){
@@ -210,7 +216,7 @@ void Nsystem(char* inp){
       else if(res==ACCESS_DENIED){
         stde("Access Denied");
         if(term_force){
-          stdo("\nCOMPUTER OVERRIDE; (danger!)\n");
+          stdo("\rCOMPUTER OVERRIDE; (danger!)\r");
           gr.__A_KILL(pid);
           stdo("Possible success.");
         }
@@ -225,14 +231,14 @@ void Nsystem(char* inp){
     stdo(String(gr.processes).c_str());
     stdo(" Processes:");
     for(int i=0;i<gr.processes&&i<8;i++){
-      stdo("\n :");
+      stdo("\r :");
       stdo((String(i)+gr.getName(i)).c_str());
     }
   }else if(!strcmp(args[0],"sudo")){
     gr.p_perms[gr.cprocess]=0xFF;
     if(!strcmp(args[1],"-f")){
       term_force=true;
-      stdo("Self-hacking ENABLED\n");
+      stdo("Self-hacking ENABLED\r");
     }
     stdo("Gained all privleges.");
   }else if(!strcmp(args[0],"mount")){
@@ -244,6 +250,8 @@ void Nsystem(char* inp){
   }else if(!strcmp(args[0],"cls")){
     vga.set_cursor_pos(0,0);
     vga.clear();
+    Serial.write(0);
+    Serial.write(1);
     return; // escape newline
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
@@ -252,37 +260,37 @@ void Nsystem(char* inp){
     if(!sd_mounted){
       stde("No SD card mounted.");
     }else{
-      Serial.print("Opening directory ");
-      Serial.println(curdir);
+      //Serial.print("Opening directory ");
+      //Serial.println(curdir);
       File dir = SD.open(curdir);
-      Serial.println("Rewinding directory...");
+      //Serial.println("Rewinding directory...");
       dir.rewindDirectory();
       bool empty=true;
       while (true) {
-        Serial.println("Opening next file...");
+        //Serial.println("Opening next file...");
         File entry =  dir.openNextFile();
-        Serial.print("Opened ");
-        Serial.println(entry.name());
+        //Serial.print("Opened ");
+        //Serial.println(entry.name());
         if (! entry) {
           break;
         }
         empty=false;
         stdo(entry.name());
         if (entry.isDirectory()) {
-          stdo("/\n");
+          stdo("/\r");
         } else {
           // files have sizes, directories do not
           for(byte j=0;j<16-len(entry.name());j++)
             stdo(" ");
           stdo("0x");
           stdo(int_to_str(entry.size()));
-          stdo("\n");
+          stdo("\r");
         }
         entry.close();
       }
-      Serial.println("Done. Closing directory...");
+      //Serial.println("Done. Closing directory...");
       dir.close();
-      Serial.println("Command complete.");
+      //Serial.println("Command complete.");
       if(empty){
         stdo("[directory empty]");
       }
@@ -291,18 +299,18 @@ void Nsystem(char* inp){
     if(cnt<2){
       stde("Usage: cd directory");
     }else{
-      Serial.print("Checking directory ");
-      Serial.println(fs_resolve(args[1]));
+      //Serial.print("Checking directory ");
+      //Serial.println(fs_resolve(args[1]));
       File f=SD.open(fs_resolve(args[1]));
       if(f&&f.isDirectory()){
         strcpy(curdir,fs_resolve_as_dir(args[1]));
-        Serial.println("Valid.");
+        //Serial.println("Valid.");
         f.close();
         goto nonewline;
       }
       stde("Not a directory: ");
       stde(fs_resolve(args[1]));
-      Serial.println("Invalid.  Closing...");
+      //Serial.println("Invalid.  Closing...");
       f.close();
     }
   }else if(!strcmp(args[0],"cat")){
@@ -371,15 +379,6 @@ void Nsystem(char* inp){
         stde(fs_resolve(args[1]));
       }
     }
-  }else if(!strcmp(args[0],"!res")){
-    if(cnt<2)
-      Serial.println("Usage: !res [directory name]");
-    else{
-      Serial.print(args[1]);
-      Serial.print(" : [");
-      Serial.print(fs_resolve(args[1]));
-      Serial.println("]");
-    }
   }else if(!strcmp(args[0],"reboot")){
     asm volatile ("  jmp 0");
   }else if(!strcmp(args[0],"bc")){
@@ -411,8 +410,8 @@ void Nsystem(char* inp){
           int length=compile(data,compiled);
           free(data);
           for(int i=0;i<length;i++){
-            Serial.write(hexchars[15&(compiled[i]>>4)]);
-            Serial.write(hexchars[compiled[i]&15]);
+            //serial.write(hexchars[15&(compiled[i]>>4)]);
+            //serial.write(hexchars[compiled[i]&15]);
             o.write(compiled[i]);
           }
           o.close();
@@ -425,8 +424,8 @@ void Nsystem(char* inp){
       f.close();
     }
   }else if(!strcmp(args[0],"help")){
-    stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
-    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  dir : list files\n");
+    stdo(" : ALL commands MUST be lowercase.\r* Commands: \r");
+    stdo("  terminate [PID] : kill process\r  lsps : list processes\r  mem : get memory usage\r  mount\r  dir : list files\r");
   }else if(!strcmp(args[0],"micro")){
     if(cnt<2)
       stde("Usage: micro [file]");
@@ -439,7 +438,7 @@ void Nsystem(char* inp){
     stde("Not a command:");
     stde(args[0]);
   }
-  stdo("\n");
+  stdo("\r");
 nonewline:
   return;
 }
@@ -448,7 +447,7 @@ void k_init() {
   randomSeed(millis()+analogRead(A5));
   stdo=term_print;
   stde=term_error;
-  stdo("Loading...\n");
+  stdo("Loading...\r");
   init_fs();
   if(mount()){
     stdo("Mounted SD card.\r");

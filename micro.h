@@ -57,7 +57,7 @@ void print_file(char* f){
   int loc=file_index;
   cursor_dirty=false;
   
-  for(loc;loc>0&&f[loc]!='\n';loc--);// goto beginning of current line
+  for(loc;loc>0&&f[loc]!='\n'&&f[loc]!='\r';loc--);// goto beginning of current line
   
   int tcx,tcy;// temporary cursor positions
   while(f[loc]!=0){

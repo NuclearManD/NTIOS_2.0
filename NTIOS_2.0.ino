@@ -6,8 +6,8 @@ long timer;
 void setup() {
   // put your setup code here, to run once:
   k_init();
-  stdo = term_print;
-  stde = term_error;
+  stdo = serial_out;//term_print;
+  stde = serial_out;//term_error;
   char term_cmd[64];
   //vga.set_cursor_pos(0, 0);
   //vga.clear();
@@ -21,15 +21,16 @@ void setup() {
 char loop_term_cmd[TERM_KBD_BUF];
 unsigned short loop_term_cnt = 0;
 boolean curs_state = false; // false means cursur not showing, true means it is.
+char bkspc_str[2]={8,0};
 void loop() {
   if (kbd_available()) {
     if (curs_state)
-      stdo((char)8);
+      stdo(bkspc_str);
     char c = kbd_read();
     char q[2]={c,0};
     if ((c == '\n') || (c == '\r')) {
       loop_term_cmd[loop_term_cnt] = 0;
-      stdo('\r');
+      stdo(q);
       system(loop_term_cmd);
       vga.set_color(1);
       loop_term_cnt = 0;
@@ -48,14 +49,14 @@ void loop() {
       }
     }
     if (curs_state)
-      stdo('_');
+      stdo("_");
   }
   if (timer + 250 < millis()) {
     timer = millis();
     curs_state = !curs_state;
     if (curs_state)
-      stdo('_');
+      stdo("_");
     else
-      stdo((char)8);
+      stdo(bkspc_str);
   }
 }
