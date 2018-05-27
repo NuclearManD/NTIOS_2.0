@@ -36,7 +36,7 @@ void loop() {
       loop_term_cnt = 0;
       stdo(curdir);
       stdo("$ ");
-    } else if (c == PS2_BACKSPACE) {
+    } else if (c == 8) {
       if (loop_term_cnt > 0) {
         stdo(q);
         loop_term_cnt--;
