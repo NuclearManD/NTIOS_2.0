@@ -211,10 +211,10 @@ void its(int i,char* o){
 int sti(char* in){
   int o=0;
   for(byte i=0;i<4;i++){
-    byte val=(in[i]&0xDF)-'0';// only capital letters
+    byte val=(byte)in[i]-(byte)'0';// only capital letters
     if(val>15)
       val-=7;
-    o|=(val)<<(i<<2);
+    o|=(val)<<((3-i)<<2);
   }
   return o;
 }

@@ -186,6 +186,12 @@ char* read(int* size, char* name){
     size[0]=-1;
   return (char*)8192;// 8192 is position of null-memory space.  Can't hurt memory that doesn't exist.
 }
+File o_file;
+void fwrt(char* data){
+  o_file.write(data);
+}
+
+
 bool term_force=false;
 
 char buf_0x10[256];
@@ -195,18 +201,47 @@ void Nsystem(char* inp){
   byte cnt=1;
   char* src=buf_0x10;
   args[0]=src;
+  boolean inQuote=false;
+  int cn=0;
   for(unsigned short i=0; i<len(inp); i++){
     char c=inp[i];
-    if(c!=' ')
-      src[i]=c;
-    else{
-      src[i]=0;
-      args[cnt]=(char*)(i+1+(unsigned short)src);
+    if(c=='"'){
+      inQuote=!inQuote;
+    }else if(c!=' '||inQuote){
+      src[cn]=c;
+      cn++;
+    }else{
+      src[cn]=0;
+      cn++;
+      args[cnt]=(char*)(cn+(unsigned short)src);
       cnt++;
       while(inp[i+1]==' ')
         i++;
     }
   }
+  void (*restore)(char*)=stdo;
+  boolean close=false;
+  if(!strcmp(args[cnt-2],">")){
+    if(!sd_mounted){
+      stde("SD not mounted.");
+      return;
+    }
+    close=true;
+    o_file=SD.open(fs_resolve(args[cnt-1]),O_WRITE | O_CREAT | O_TRUNC);
+  }else if(!strcmp(args[cnt-2],"&>")){
+    if(!sd_mounted){
+      stde("SD not mounted.");
+      return;
+    }
+    close=true;
+    o_file=SD.open(fs_resolve(args[cnt-1]),6);
+  }
+  if(close&&!o_file){
+    stde("File Error");
+    return;
+  }
+  if(close)
+    stdo=fwrt;
   src[len(inp)]=0;
   if(!strcmp(args[0],"terminate")){
     int pid=to_int(args[1]);
@@ -237,6 +272,9 @@ void Nsystem(char* inp){
       stdo("\r :");
       stdo((String(i)+gr.getName(i)).c_str());
     }
+  }else if(!strcmp(args[0],"echo")){
+    if(cnt>=2)
+      stdo(args[1]);
   }else if(!strcmp(args[0],"sudo")){
     gr.p_perms[gr.cprocess]=0xFF;
     if(!strcmp(args[1],"-f")){
@@ -255,7 +293,7 @@ void Nsystem(char* inp){
     vga.clear();
     Serial.write(0);
     Serial.write(1);
-    return; // escape newline
+    goto nonewline;
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
@@ -454,8 +492,11 @@ void Nsystem(char* inp){
     stde("Not a command:");
     stde(args[0]);
   }
-  stdo("\r");
+  if(!close)stdo("\r");
 nonewline:
+  stdo=restore;
+  if(close)
+    o_file.close();
   return;
 }
 void k_init() {
