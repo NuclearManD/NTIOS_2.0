@@ -6,8 +6,8 @@ long timer;
 void setup() {
   // put your setup code here, to run once:
   k_init();
-  stdo = ser_print;
-  stde = ser_print;
+  //stdo = ser_print;
+  //stde = ser_print;
   char term_cmd[64];
   //vga.set_cursor_pos(0, 0);
   //vga.clear();

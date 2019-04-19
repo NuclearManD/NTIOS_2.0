@@ -297,7 +297,7 @@ void Nsystem(char* inp){
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
-  }else if(!strcmp(args[0],"dir")){
+  }else if(!strcmp(args[0],"ls")){
     if(!sd_mounted){
       stde("No SD card mounted.");
     }else{
@@ -305,7 +305,7 @@ void Nsystem(char* inp){
       //Serial.println(curdir);
       File dir = SD.open(curdir);
       //Serial.println("Rewinding directory...");
-      dir.rewindDirectory();
+      dir.seek(0);
       bool empty=true;
       while (true) {
         //Serial.println("Opening next file...");
@@ -380,9 +380,9 @@ void Nsystem(char* inp){
         stde(fs_resolve(args[1]));
       }
     }
-  }else if(!strcmp(args[0],"del")){
+  }else if(!strcmp(args[0],"rm")){
     if(cnt<2){
-      stde("Usage: del file");
+      stde("Usage: rm file");
     }else{
       File f=SD.open(fs_resolve(args[1]));
       if(f){
@@ -395,7 +395,7 @@ void Nsystem(char* inp){
     }
   }else if(!strcmp(args[0],"hex")){
     if(cnt<2){
-      stde("Usage: cat file");
+      stde("Usage: hex file");
     }else{
       File f=SD.open(fs_resolve(args[1]));
       if(f&&!f.isDirectory()){
@@ -479,7 +479,9 @@ void Nsystem(char* inp){
     }
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\r* Commands: \r");
-    stdo("  terminate [PID] : kill process\r  lsps : list processes\r  mem : get memory usage\r  mount\r  dir : list files\r");
+    stdo("  terminate [PID] : kill process\r  lsps : list processes\r  mem : get memory usage\r  mount\r  ls : list files\r");
+    stdo("  bc : compile basic\r  reboot\r  rm file : delete file or directory\r  hex file : print hex contents of file\r");
+    stdo("  cat : print file\r  cd\r  mkdir\n  reboot\n");
   }else if(!strcmp(args[0],"micro")){
     if(cnt<2)
       stde("Usage: micro [file]");

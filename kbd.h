@@ -5,10 +5,10 @@ PS2Keyboard* kbd;
 #define KBD_TYPE_HWS  0x01  // hardware serial
 #define KBD_TYPE_PS2  0x02
 
-byte kbd_types[]={KBD_TYPE_HWS};
-long kbd_meta []={115200};
+byte kbd_types[]={KBD_TYPE_HWS, KBD_TYPE_PS2};
+long kbd_meta []={115200, 0x0402};
 
-byte num_keyboards=1;
+byte num_keyboards=2;
 
 void err_mult_def(){
   stde("Error: Keyboard defined twice!\r > Ignoring...\r");
@@ -83,4 +83,3 @@ int kbd_available(){
   }
   return total;
 }
-
