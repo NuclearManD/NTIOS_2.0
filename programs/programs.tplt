@@ -4,6 +4,9 @@ This file serves to add commands to the system dynamically.
 
 
 // includes
+
+#include "program.h"
+
 {}
 
 int execute_program(char** argv, int argc){{

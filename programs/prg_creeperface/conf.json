@@ -1,5 +1,6 @@
 {
 	"include":"main.c",
 	"entry":"creeperface_main",
-	"cmd":"creeperface"
+	"cmd":"creeperface",
+    "disabled":true
 }
