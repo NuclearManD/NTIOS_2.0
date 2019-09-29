@@ -26,7 +26,7 @@ public:
 	void uart_preinit(){
 		Serial.begin(115200);
 		set_primary_terminal(this);
-		stdo("UART set to promary terminal.\n");
+		stdo("UART set to primary terminal.\n");
 	}
 
 	void uart_init(){
