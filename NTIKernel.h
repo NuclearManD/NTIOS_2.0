@@ -7,7 +7,14 @@
 #else
 #include "WProgram.h"
 #endif
-#include "basic.h"
+
+
+/*
+ * Some quick fixes to be handled later - just to get it to compile.
+ */
+
+bool sd_mounted = false;
+
 char* substr(char* arr, int begin, int len);
 void Nsystem(char* inp);
 unsigned short len(char* d);
@@ -36,8 +43,6 @@ void (*stde)(char*)=noprnt;
 #ifdef USE_CYRILLIC
 #include "Cyrillic.h"//  include here for dependencies
 #endif
-#include "fs.h"
-#include "micro.h"
 void term_close(){
   term_opn=false;
   term_y=0;
@@ -51,6 +56,7 @@ void term_error(char* d){
   vga.print(d);
   vga.set_color(1);
 }
+/*
 int exec_file(char* name){
   if(!sd_mounted){
     stde("No storage.");
@@ -81,7 +87,7 @@ int exec_file(char* name){
   f.close();
   setup_basic(stdo);
   return executeCompiledCode(compiled, length);
-}
+}*/
 char* int_to_str(int i){
   char* o=malloc(5);
   char* a="0123456789ABCDEF";
@@ -218,7 +224,7 @@ bool okcancel(const char* q){
   gear_stopwait();
   return sel;
 }
-char* read(int* size, char* name){
+/*char* read(int* size, char* name){
   File f=SD.open(name);
   if(f){
     size[0]=f.size();
@@ -229,7 +235,7 @@ char* read(int* size, char* name){
   }else
     size[0]=-1;
   return (char*)8192;// 8192 is position of null-memory space.  Can't hurt memory that doesn't exist.
-}
+}*/
 void println(const char* q){
   if(term_opn==false){
     window(0,0,30,12);
@@ -486,11 +492,11 @@ void Nsystem(char* inp){
     }
     stdo("Gained all privleges.");
   }else if(!strcmp(args[0],"mount")){
-    if(mount())
+    /*if(mount())
       stdo("Success.");
     else
       stde("Unknown Error.");
-    kbd.begin(4, 2);
+    kbd.begin(4, 2);*/
   }else if(!strcmp(args[0],"cls")){
     vga.set_cursor_pos(0,0);
     vga.clear();
@@ -502,7 +508,7 @@ void Nsystem(char* inp){
     if(!sd_mounted){
       stde("No SD card mounted.");
     }else{
-      Serial.print("Opening directory ");
+      /*Serial.print("Opening directory ");
       Serial.println(curdir);
       File dir = SD.open(curdir);
       Serial.println("Rewinding directory...");
@@ -530,19 +536,13 @@ void Nsystem(char* inp){
       }
       Serial.println("Done. Closing directory...");
       dir.close();
-      Serial.println("Command complete.");
-    }
-  }else if(!strcmp(args[0],"micro")){
-    if(cnt<2){
-      stde("Usage: micro [file]");
-    }else{
-      micro_edit(fs_resolve(args[1]));
+      Serial.println("Command complete.");*/
     }
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
       stde("Usage: cd directory");
     }else{
-      Serial.print("Checking directory ");
+      /*Serial.print("Checking directory ");
       Serial.println(fs_resolve(args[1]));
       File f=SD.open(fs_resolve(args[1]));
       if(f&&f.isDirectory()){
@@ -554,19 +554,19 @@ void Nsystem(char* inp){
       stde("Not a directory: ");
       stde(fs_resolve(args[1]));
       Serial.println("Invalid.  Closing...");
-      f.close();
+      f.close();*/
     }
   }else if(!strcmp(args[0],"mkdir")){
     if(cnt<2)
       stde("Usage: mkdir [directory name]");
     else{
-      stdo("creating directory ");
+      /*stdo("creating directory ");
       stdo(fs_resolve(args[1]));
       stdo("...\r");
       if(!mkdir(args[1])){
         stde("Error creating ");
         stde(fs_resolve(args[1]));
-      }
+      }*/
     }
   }else if(!strcmp(args[0],"logout")){
     x_server_running=false;
@@ -582,9 +582,9 @@ void Nsystem(char* inp){
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
     stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  dir : list files\n");
-  }else if((args[0][0]=='.')&&(args[0][1]=='/')){
+  }/*else if((args[0][0]=='.')&&(args[0][1]=='/')){
     exec_file(args[0]+2);
-  }else{
+  }*/else{
     stde("Not a command:");
     stde(args[0]);
   }
@@ -600,14 +600,14 @@ void k_init() {
   stdo=term_print;
   stde=term_error;
   stdo("Loading...\n");
-  init_fs();
+  /*init_fs();
   if(mount()){
     stdo("Mounted SD card.\r");
     Serial.println("SD card mounted.");
   }else{
     stde("Failed to mount SD card.\r");
     Serial.println("SD card failed to mount.");
-  }
+  }*/
   kbd.begin(4, 2);
   stdo("Loaded keyboard.\r");
   rows=256;//vga.y_tiles()*16;

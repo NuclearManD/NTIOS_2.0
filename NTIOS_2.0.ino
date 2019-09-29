@@ -14,7 +14,7 @@ void setup() {
   
   vga.set_color(1);
   vga.println("NTIOS");
-  vga.print(curdir);
+  //vga.print(curdir);
   vga.print("$ ");
 
   
@@ -34,7 +34,7 @@ void loop() {
       system(loop_term_cmd);
       vga.set_color(1);
       loop_term_cnt = 0;
-      vga.print(curdir);
+      //vga.print(curdir);
       vga.print("$ ");
     } else if (c == PS2_BACKSPACE) {
       if (loop_term_cnt > 0) {
@@ -343,4 +343,3 @@ void edit_upd() {
 void edit_fup() {
 
 }
-

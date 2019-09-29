@@ -1127,4 +1127,3 @@ void alph_print(char* d){
     i++;
   }
 }
-
