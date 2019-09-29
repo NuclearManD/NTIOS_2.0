@@ -16,3 +16,7 @@ int execute_program(char** argv, int argc){{
 {}
 	return -1;
 }}
+
+void init_programs(){{
+{}
+}}

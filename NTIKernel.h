@@ -1,7 +1,7 @@
 #ifndef NTI_KERNEL_H
 #define NTI_KERNEL_H
 #pragma GCC diagnostic warning "-fpermissive"
-//#pragma GCC diagnostic warning "-pedantic"
+
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h" // for attachInterrupt, FALLING
 #else
@@ -9,6 +9,7 @@
 #endif
 
 #include "programs/program.h"
+#include "drivers/drivers.h"
 
 /*
  * Some quick fixes to be handled later - just to get it to compile.
@@ -35,26 +36,29 @@ byte term_y, term_x=0;
 byte sel_process=0;
 
 void (*reset)()=0;
-void noprnt(char* x){}
-void (*stdo)(char*)=noprnt;
-void (*stde)(char*)=noprnt;
 
-void term_close(){
-  term_opn=false;
-  term_y=0;
-}
-void term_print(char* d){
-  vga.set_color(1);
-  vga.print(d);
-}
-void term_error(char* d){
-  vga.set_color(2);
-  vga.print(d);
-  vga.set_color(1);
+Terminal* primary_term = new VoidTerminal();
+FileSystem* root_fs;
+
+void set_primary_terminal(Terminal* term){
+  primary_term = term;
 }
 
-void ser_print(char* d){
-  Serial.print(d);
+void set_root_fs(FileSystem* fs){
+  root_fs = fs;
+}
+
+void stdo(char* d){
+  primary_term->stdo(d);
+}
+void stde(char* d){
+  primary_term->stde(d);
+}
+char read(){
+  return primary_term->read();
+}
+bool available(){
+  return primary_term->available();
 }
 
 char* int_to_str(int i){
@@ -87,18 +91,6 @@ int to_int(char* str){
   return out;
 }
 
-char last_key=0;
-bool shift_key=false;
-char read(){
-  if(gr.cprocess==sel_process)
-    return last_key;
-  else{
-    return 0;
-  }
-}
-bool available(){
-  return (gr.cprocess==sel_process)&&(last_key!=0);
-}
 int launch(void (*a)(),void (*b)(),char* name="?", void (*c)()=__empty){
   sel_process=gr.addProcess(a,b,name,c,P_KILLER|P_KILLABLE);  // do this before addProcess() to get ID of next new process
   return sel_process;
@@ -108,6 +100,89 @@ void gear_stopwait(){
   for(byte i=0;i<gr.processes;i++){
     gr.ftimes[i]=millis()+gr.fupd_rate;
   }
+}
+
+char curdir[128];
+char* fs_resolve(char* fs_buffer, char* loc){
+  char tmp[32];
+  int index=0;
+  int copied=0;
+  int last_index=0;
+  if(loc[0]!='/'){
+    for(int i=0;i<=strlen(curdir);i++){
+      if(curdir[i]=='/'||curdir[i]==0){
+        if(!strcmp(tmp,".")){
+          ;
+        }else if(!strcmp(tmp,"..")){
+          index=last_index;
+        }else{
+          last_index=index;
+          for(int j=0;j<copied;j++){
+            fs_buffer[index]=tmp[j];
+            index++;
+          }
+          if(fs_buffer[index-1]!='/'){
+            fs_buffer[index]='/';
+            index++;
+          }
+        }
+        copied=0;
+      }else{
+        tmp[copied]=curdir[i];
+        copied++;
+      }
+    }
+    copied=0;
+  }
+  for(int i=0;i<=strlen(loc);i++){
+    if(loc[i]=='/'||loc[i]==0){
+      if(!strcmp(tmp,".")){
+        ;
+      }else if(!strcmp(tmp,"..")){
+        index=last_index;
+      }else{
+        last_index=index;
+        for(int j=0;j<copied;j++){
+          fs_buffer[index]=tmp[j];
+          index++;
+        }
+        if(fs_buffer[index-1]!='/'){
+          fs_buffer[index]='/';
+          index++;
+        }
+      }
+      copied=0;
+    }else{
+      tmp[copied]=loc[i];
+      copied++;
+    }
+  }
+  if(loc[strlen(loc)-1]=='/'){
+    if(fs_buffer[index-1]!='/')
+      fs_buffer[index]='/';
+    fs_buffer[index+1]=0;
+  }else if(fs_buffer[index-1]=='/'){
+    fs_buffer[index-1]=0;
+  }else
+    fs_buffer[index]=0;
+  return fs_buffer;
+}
+
+bool exists(char* path){
+  char buffer[len(path)+16];
+  return root_fs->exists(fs_resolve(buffer, path));
+}
+bool isfile(char* path){
+  char buffer[len(path)+16];
+  return root_fs->isfile(fs_resolve(buffer, path));
+}
+char* ls(char* path){
+  char buffer[len(path)+16];
+  return root_fs->ls(fs_resolve(buffer, path));
+}
+int mkdir(char* path){
+  char buffer[len(path)+16];
+  return root_fs->mkdir(fs_resolve(buffer, path));
 }
 
 void shell_upd();
@@ -122,10 +197,6 @@ void system(char* inp){
   char* src=buf_0x10;
   args[0]=src;
   
-  #ifdef UART_DEBUG
-    Serial.print("Executing command sequence [");
-  #endif
-  
   for(unsigned short i=0; i<len(inp); i++){
     char c=inp[i];
     if(c!=' ')
@@ -133,11 +204,6 @@ void system(char* inp){
     else{
       src[i]=0;
       args[cnt]=(char*)(i+1+(unsigned short)src);
-      
-      #ifdef UART_DEBUG
-        Serial.print(args[cnt]);
-        Serial.print(" ");
-      #endif
       
       cnt++;
       while(inp[i+1]==' ')
@@ -181,12 +247,6 @@ void system(char* inp){
       stdo("Self-hacking ENABLED\n");
     }
     stdo("Gained all privleges.");
-  }else if(!strcmp(args[0],"mount")){
-    /*if(mount())
-      stdo("Success.");
-    else
-      stde("Unknown Error.");
-    kbd.begin(4, 2);*/
   }else if(!strcmp(args[0],"cls")){
     vga.set_cursor_pos(0,0);
     vga.clear();
@@ -194,78 +254,32 @@ void system(char* inp){
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
-  }else if(!strcmp(args[0],"dir")){
-    if(!sd_mounted){
-      stde("No SD card mounted.");
-    }else{
-      /*Serial.print("Opening directory ");
-      Serial.println(curdir);
-      File dir = SD.open(curdir);
-      Serial.println("Rewinding directory...");
-      dir.rewindDirectory();
-      while (true) {
-        Serial.println("Opening next file...");
-        File entry =  dir.openNextFile();
-        Serial.print("Opened ");
-        Serial.println(entry.name());
-        if (! entry) {
-          break;
-        }
-        stdo(entry.name());
-        if (entry.isDirectory()) {
-          stdo("/\n");
-        } else {
-          // files have sizes, directories do not
-          for(byte j=0;j<16-len(entry.name());j++)
-            stdo(" ");
-          stdo("0x");
-          stdo(int_to_str(entry.size()));
-          stdo("\n");
-        }
-        entry.close();
-      }
-      Serial.println("Done. Closing directory...");
-      dir.close();
-      Serial.println("Command complete.");*/
-    }
+  }else if(!strcmp(args[0],"ls")){
+    stdo(ls(curdir));
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
-      stde("Usage: cd directory");
+      stde("Usage: cd [directory]");
     }else{
-      /*Serial.print("Checking directory ");
-      Serial.println(fs_resolve(args[1]));
-      File f=SD.open(fs_resolve(args[1]));
-      if(f&&f.isDirectory()){
-        strcpy(curdir,fs_resolve(args[1]));
-        Serial.println("Valid.");
-        f.close();
-        goto nonewline;
-      }
-      stde("Not a directory: ");
-      stde(fs_resolve(args[1]));
-      Serial.println("Invalid.  Closing...");
-      f.close();*/
+      if(exists(args[1])&&(!isfile(args[1]))){
+        strcpy(curdir, args[1]);
+      }else
+        stde("Not a directory.");
     }
   }else if(!strcmp(args[0],"mkdir")){
     if(cnt<2)
       stde("Usage: mkdir [directory name]");
     else{
-      /*stdo("creating directory ");
-      stdo(fs_resolve(args[1]));
-      stdo("...\r");
-      if(!mkdir(args[1])){
-        stde("Error creating ");
-        stde(fs_resolve(args[1]));
-      }*/
+      int result = mkdir(args[1]);
+      if(result!=0){
+        stde(("Error "+String(result)+" in mkdir").c_str());
+      }
     }
   }else if(!strcmp(args[0],"reboot")){
     asm volatile ("  jmp 0");  
   }else if(!strcmp(args[0],"help")){
     stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
     stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  dir : list files\n");
-  }/*else if((args[0][0]=='.')&&(args[0][1]=='/')){
-    exec_file(args[0]+2);
-  }*/else{
+  }else{
     // try program execution
     execute_program(args, cnt);
   }
@@ -274,36 +288,17 @@ nonewline:
   free(src);
 }
 void k_init() {
-  #ifdef UART_DEBUG
-    Serial.begin(9600);
-    Serial.println("Debugging on this port.");
-  #endif
+  curdir[0] = '/';
+  load_drivers();
 
-  Serial.begin(9600);
+  stdo("Running program setup...\n");
+  init_programs();
   
-  
-  //vga.begin(11,10);
   randomSeed(millis()+analogRead(A5));
-  stdo=ser_print;
-  stde=ser_print;
-  stdo("Loading...\n");
-  /*init_fs();
-  if(mount()){
-    stdo("Mounted SD card.\r");
-    Serial.println("SD card mounted.");
-  }else{
-    stde("Failed to mount SD card.\r");
-    Serial.println("SD card failed to mount.");
-  }*/
-  //kbd.begin(4, 2);
-  //stdo("Loaded keyboard.\r");
+
   rows=256;//vga.y_tiles()*16;
   cols=18*16;//vga.x_tiles()*16;
 
-  stdo("Entering user mode...\n");
-  
-  #ifdef UART_DEBUG
-    Serial.println("Entering user mode...");
-  #endif
+  stdo("Entering user mode...\n\n");
 }
 #endif

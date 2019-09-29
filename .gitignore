@@ -47,3 +47,4 @@ Temporary Items
 .apdisk
 
 programs/program.c
+drivers/drivers.c

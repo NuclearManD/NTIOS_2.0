@@ -1,0 +1,6 @@
+{
+	"include":"main.c",
+	"entry":"dev_main",
+	"init":"dev_init",
+	"cmd":"dev"
+}

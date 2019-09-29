@@ -3,8 +3,8 @@
 
 #include <NMT_GFX.h>
 
-extern void (*stdo)(char*);
-extern void (*stde)(char*);
+extern void stdo(char* d);
+extern void stde(char* d);
 extern char* int_to_str(int i);
 extern int freeRam();
 extern unsigned short len(char* d);

@@ -11,6 +11,8 @@ ending = '{\n\
 
 include_template = '#include "{}"\n'
 
+init_template = '\t{}();\n'
+
 def list_programs(d='.'):
     out = []
     for i in os.listdir(d):
@@ -25,8 +27,8 @@ if len(program_dirs)==0:
     print("Fatal: no programs!")
 else:
     output_ifs = ''
-
     include_str = ''
+    inits = ''
 
     for i in program_dirs:
         with open(os.path.join(i, 'conf.json')) as f:
@@ -40,7 +42,11 @@ else:
         output_ifs+=if_block_template.format(cmd, func)
         include_str+=include_template.format(inc)
 
+        if 'init' in conf.keys():
+            inits+=init_template.format(conf['init'])
+        
+
     output_ifs+=ending
 
     with open('program.c', 'w') as f:
-        f.write(template.format(include_str, output_ifs))
+        f.write(template.format(include_str, output_ifs, inits))

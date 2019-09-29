@@ -22,40 +22,27 @@ char loop_term_cmd[TERM_KBD_BUF];
 unsigned short loop_term_cnt = 0;
 boolean curs_state = false; // false means cursur not showing, true means it is.
 void loop() {
-  if (Serial.available()){//kbd.available()) {
-    /*if (curs_state)
-      vga.print((char)8);*/
-    char c = Serial.read();//kbd.read();
+  if (available()){
+    char c = read();
     if ((c == '\n') || (c == '\r')) {
       loop_term_cmd[loop_term_cnt] = 0;
       stdo("\n");
       system(loop_term_cmd);
-      //vga.set_color(1);
       loop_term_cnt = 0;
-      //vga.print(curdir);
       stdo("$ ");
-    } else if (c == PS2_BACKSPACE) {
+    } else if (c == CHAR_BACKSPACE) {
       if (loop_term_cnt > 0) {
-        //vga.print(c);
         loop_term_cnt--;
+        char ch[] = {c, 0};
+        stdo(ch);
       }
     } else {
       if (loop_term_cnt < TERM_KBD_BUF) {
         loop_term_cmd[loop_term_cnt] = c;
         loop_term_cnt++;
-        //vga.print(c);
-        Serial.print(c);
+        char ch[] = {c, 0};
+        stdo(ch);
       }
     }
-    //if (curs_state)
-      //vga.print('_');
   }
-  /*if (timer + 250 < millis()) {
-    timer = millis();
-    curs_state = !curs_state;
-    if (curs_state)
-      vga.print('_');
-    else
-      vga.print((char)8);
-  }*/
 }
