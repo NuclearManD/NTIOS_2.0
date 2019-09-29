@@ -1,7 +1,7 @@
 import os, json
 
-if_block_template = '\tif(cmd=="{}"){{\n\
-\t\t{}(argv, argc);\n\
+if_block_template = '\tif(!strcmp(cmd, "{}")){{\n\
+\t\treturn {}(argv, argc);\n\
 \t}}else '
 
 ending = '{\n\

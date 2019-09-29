@@ -53,6 +53,10 @@ void term_error(char* d){
   vga.set_color(1);
 }
 
+void ser_print(char* d){
+  Serial.print(d);
+}
+
 char* int_to_str(int i){
   char* o=malloc(5);
   char* a="0123456789ABCDEF";
@@ -274,11 +278,14 @@ void k_init() {
     Serial.begin(9600);
     Serial.println("Debugging on this port.");
   #endif
+
+  Serial.begin(9600);
   
-  vga.begin(11,10);
+  
+  //vga.begin(11,10);
   randomSeed(millis()+analogRead(A5));
-  stdo=term_print;
-  stde=term_error;
+  stdo=ser_print;
+  stde=ser_print;
   stdo("Loading...\n");
   /*init_fs();
   if(mount()){
@@ -288,12 +295,12 @@ void k_init() {
     stde("Failed to mount SD card.\r");
     Serial.println("SD card failed to mount.");
   }*/
-  kbd.begin(4, 2);
-  stdo("Loaded keyboard.\r");
+  //kbd.begin(4, 2);
+  //stdo("Loaded keyboard.\r");
   rows=256;//vga.y_tiles()*16;
   cols=18*16;//vga.x_tiles()*16;
 
-  stdo("Entering user mode...\r");
+  stdo("Entering user mode...\n");
   
   #ifdef UART_DEBUG
     Serial.println("Entering user mode...");
