@@ -3,9 +3,12 @@
 
 #define DRIVER_TYPE_TERM 0
 #define DRIVER_TYPE_FS 1
+#define DRIVER_TYPE_GRAPHICS_HARDWARE 2
 
 #define NOT_ERROR 0
 #define ERROR_NOT_SUPPORTED -1
+#define ERROR_NO_HARDWARE -2
+#define ERROR_ALREADY_STARTED -3
 
 #define CHAR_BACKSPACE 8
 
@@ -65,6 +68,8 @@ public:
 		return "";
 	}
 };
+
+#include "graphics_drivers.h"
 
 void set_primary_terminal(Terminal* term);
 void set_root_fs(FileSystem* fs);

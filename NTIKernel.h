@@ -22,18 +22,12 @@ void Nsystem(char* inp);
 unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
-#include <NMT_GFX.h>
 #include <GEAR.h>
 #include <PS2Keyboard.h>
-int rows, cols;
+
 GearControl gr;
 byte data = 0;
-NMT_GFX vga;
 PS2Keyboard kbd;
-byte selected=0;
-bool term_opn=false;
-byte term_y, term_x=0;
-byte sel_process=0;
 
 void (*reset)()=0;
 
@@ -92,8 +86,7 @@ int to_int(char* str){
 }
 
 int launch(void (*a)(),void (*b)(),char* name="?", void (*c)()=__empty){
-  sel_process=gr.addProcess(a,b,name,c,P_KILLER|P_KILLABLE);  // do this before addProcess() to get ID of next new process
-  return sel_process;
+  return gr.addProcess(a,b,name,c,P_KILLER|P_KILLABLE);  // do this before addProcess() to get ID of next new process
 }
 
 void gear_stopwait(){
@@ -211,46 +204,8 @@ void system(char* inp){
     }
   }
   src[len(inp)]=0;
-  if(!strcmp(args[0],"terminate")){
-    int pid=to_int(args[1]);
-    if(pid>=gr.processes){
-      stde("terminate : Bad PID");
-    }else{
-      int res=gr.kill(pid);
-      if(res>=0)
-        stdo("Process Killed");
-      else if(res==ACCESS_DENIED){
-        stde("Access Denied");
-        if(term_force){
-          stdo("\nCOMPUTER OVERRIDE; (danger!)\n");
-          gr.__A_KILL(pid);
-          stdo("Possible success.");
-        }
-      }else if(res==INVALID_ARGUMENT)
-        stde("Invalid Argument");
-      else{
-        stde("Unknown Error ");
-        stde(String(res).c_str());
-      }
-    }
-  }else if(!strcmp(args[0],"lsps")){
-    stdo(String(gr.processes).c_str());
-    stdo(" Processes:");
-    for(int i=0;i<gr.processes&&i<8;i++){
-      stdo("\n :");
-      stdo((String(i)+gr.getName(i)).c_str());
-    }
-  }else if(!strcmp(args[0],"sudo")){
+  if(!strcmp(args[0],"su")){
     gr.p_perms[gr.cprocess]=0xFF;
-    if(!strcmp(args[1],"-f")){
-      term_force=true;
-      stdo("Self-hacking ENABLED\n");
-    }
-    stdo("Gained all privleges.");
-  }else if(!strcmp(args[0],"cls")){
-    vga.set_cursor_pos(0,0);
-    vga.clear();
-    return; // escape newline
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     stdo(String(freeRam()).c_str());
@@ -276,9 +231,6 @@ void system(char* inp){
     }
   }else if(!strcmp(args[0],"reboot")){
     asm volatile ("  jmp 0");  
-  }else if(!strcmp(args[0],"help")){
-    stdo(" : ALL commands MUST be lowercase.\n* Commands: \n");
-    stdo("  terminate [PID] : kill process\n  lsps : list processes\n  mem : get memory usage\n  mount\n  dir : list files\n");
   }else{
     // try program execution
     execute_program(args, cnt);
@@ -288,6 +240,7 @@ nonewline:
   free(src);
 }
 void k_init() {
+  Serial.begin(115200);
   curdir[0] = '/';
   load_drivers();
 
@@ -295,9 +248,6 @@ void k_init() {
   init_programs();
   
   randomSeed(millis()+analogRead(A5));
-
-  rows=256;//vga.y_tiles()*16;
-  cols=18*16;//vga.x_tiles()*16;
 
   stdo("Entering user mode...\n\n");
 }
