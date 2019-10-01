@@ -208,9 +208,13 @@ void system(char* inp){
     gr.p_perms[gr.cprocess]=0xFF;
   }else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
-    stdo(String(freeRam()).c_str());
+    char buf[10];
+    stdo(itoa(freeRam(), buf, 10));
   }else if(!strcmp(args[0],"ls")){
-    stdo(ls(curdir));
+    if(cnt<2)
+      stdo(ls(curdir));
+    else
+      stdo(ls(args[1]));
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
       stde("Usage: cd [directory]");
