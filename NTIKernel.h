@@ -161,6 +161,14 @@ char* fs_resolve(char* fs_buffer, char* loc){
   return fs_buffer;
 }
 
+bool dircmp(char* a, char* b){
+  char bufa[len(a)+16];
+  char bufb[len(b)+16];
+  fs_resolve(bufa, a);
+  fs_resolve(bufb, b);
+  
+}
+
 bool exists(char* path){
   char buffer[len(path)+16];
   return root_fs->exists(fs_resolve(buffer, path));
@@ -169,9 +177,9 @@ bool isfile(char* path){
   char buffer[len(path)+16];
   return root_fs->isfile(fs_resolve(buffer, path));
 }
-char* ls(char* path){
+char* ls(char* path, int i){
   char buffer[len(path)+16];
-  return root_fs->ls(fs_resolve(buffer, path));
+  return root_fs->ls(fs_resolve(buffer, path), i);
 }
 int mkdir(char* path){
   char buffer[len(path)+16];
@@ -211,10 +219,25 @@ void system(char* inp){
     char buf[10];
     stdo(itoa(freeRam(), buf, 10));
   }else if(!strcmp(args[0],"ls")){
+    char* path;
     if(cnt<2)
-      stdo(ls(curdir));
+      path = curdir;
     else
-      stdo(ls(args[1]));
+      path = args[1];
+    if(ls(path, 0)==0){
+      stde("Not a directory: '");
+      stde(path);
+      stde("'");
+    }else{
+      int i = 1;
+      while(true){
+        char* fname = ls(path, i);
+        if(fname==0)break;
+        stdo(fname);
+        stdo("\n");
+        i++;
+      }
+    }
   }else if(!strcmp(args[0],"cd")){
     if(cnt<2){
       stde("Usage: cd [directory]");

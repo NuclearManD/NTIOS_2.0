@@ -13,6 +13,7 @@ extern void __empty();
 extern int launch(void (*a)(),void (*b)(),char* name="?", void (*c)()=__empty);
 extern void system(char* inp);
 extern char* fs_resolve(char* fs_buffer, char* loc);
+extern bool dircmp(char* a, char* b);
 
 
 #endif

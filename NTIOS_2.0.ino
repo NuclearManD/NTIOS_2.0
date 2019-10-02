@@ -6,6 +6,7 @@
 
 void setup() {
   k_init();
+  stdo(curdir);
   stdo("$ ");
 }
 
@@ -19,6 +20,7 @@ void loop() {
       stdo("\n");
       system(loop_term_cmd);
       loop_term_cnt = 0;
+      stdo(curdir);
       stdo("$ ");
     } else if (c == CHAR_BACKSPACE) {
       if (loop_term_cnt > 0) {

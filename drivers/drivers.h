@@ -47,7 +47,7 @@ public:
 
 class FileSystem: public Driver{
 public:
-	virtual char* ls(char* dir);
+	virtual char* ls(char* dir, int index);
 	virtual bool isfile(char* dir);
 	virtual bool exists(char* dir);
 	virtual int mkdir(char* dir);

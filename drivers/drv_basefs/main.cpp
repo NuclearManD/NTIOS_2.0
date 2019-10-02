@@ -8,23 +8,29 @@
 
 class RootFS: public FileSystem{
 public:
-	char* ls(char* dir){
-		if(!strcmp(dir, "/"))
-			return "dev";
-		else if(!strcmp(dir, "/dev/")){
-			String out = "";
-			for(int i=0;i<num_drivers();i++){
-				out = out + get_driver(i)->get_path() + ',';
+	char* ls(char* dir, int index){
+		if(!dircmp(dir, "/")){
+			if(index==1)
+				return "dev";
+			else if(index>1)
+				return 0; // error, does not exist
+		}else if(!dircmp(dir, "dev")){
+			if(index>0){
+				index--;
+				if(index>=num_drivers())
+					return 0; // does not exist
+				return get_driver(index)->get_path();
 			}
-			return out.substring(0, out.length()-1).c_str();
 		}else{
-			return "";
+			return 0; // error
 		}
+		return ".";
 	}
 	bool isfile(char* dir){
 		return false;
 	}
 	bool exists(char* dir){
+		if(!(dircmp(dir, "/")&&dircmp(dir, "/dev")))return true;
 		return false;
 	}
 	int mkdir(char* dir){
