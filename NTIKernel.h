@@ -23,11 +23,11 @@ unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
 #include <GEAR.h>
-#include <PS2Keyboard.h>
+//#include <PS2Keyboard.h>
 
 GearControl gr;
 byte data = 0;
-PS2Keyboard kbd;
+//PS2Keyboard kbd;
 
 void (*reset)()=0;
 
@@ -65,11 +65,11 @@ char* int_to_str(int i){
   o[4]=0;
   return o;
 }
-int freeRam() {
+/*int freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
-}
+}*/
 
 unsigned short len(char* d){
   unsigned short i=0;
@@ -214,11 +214,11 @@ void system(char* inp){
   src[len(inp)]=0;
   if(!strcmp(args[0],"su")){
     gr.p_perms[gr.cprocess]=0xFF;
-  }else if(!strcmp(args[0],"mem")){
+  }/*else if(!strcmp(args[0],"mem")){
     stdo("RAM bytes free: ");
     char buf[10];
     stdo(itoa(freeRam(), buf, 10));
-  }else if(!strcmp(args[0],"ls")){
+  }*/else if(!strcmp(args[0],"ls")){
     char* path;
     if(cnt<2)
       path = curdir;
@@ -256,9 +256,9 @@ void system(char* inp){
         stde(("Error "+String(result)+" in mkdir").c_str());
       }
     }
-  }else if(!strcmp(args[0],"reboot")){
+  }/*else if(!strcmp(args[0],"reboot")){
     asm volatile ("  jmp 0");  
-  }else{
+  }*/else{
     // try program execution
     execute_program(args, cnt);
   }
