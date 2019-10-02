@@ -264,7 +264,7 @@ void system(char* inp){
   }
   stdo("\n");
 nonewline:
-  free(src);
+  return;
 }
 void k_init() {
   Serial.begin(115200);
