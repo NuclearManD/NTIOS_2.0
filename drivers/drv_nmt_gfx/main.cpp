@@ -41,7 +41,7 @@ public:
 	}
 	
 	bool is_connected(){
-		return true;//gfx.is_connected();
+		return gfx.is_connected();
 	}
 	
 	void set_cursor_pos(unsigned int x, unsigned int y){
