@@ -3,6 +3,5 @@
 	"type":"graphics_hardware",
 	"name":"nmt_gfx",
 	"init":"nmt_gfx_init",
-	"include":"main.cpp",
-	"disabled":true
+	"include":"main.cpp"
 }
