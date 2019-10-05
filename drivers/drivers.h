@@ -4,6 +4,7 @@
 #define DRIVER_TYPE_TERM 0
 #define DRIVER_TYPE_FS 1
 #define DRIVER_TYPE_GRAPHICS_HARDWARE 2
+#define DRIVER_TYPE_KEYBOARD 3
 
 #define NOT_ERROR 0
 #define ERROR_NOT_SUPPORTED -1
@@ -30,6 +31,18 @@ public:
 	void set_blinking(bool blink){}
 	int set_font(unsigned char** font, int height, int length){
 		return ERROR_NOT_SUPPORTED;
+	}
+};
+
+class Keyboard: public Driver{
+public:
+	/*
+	* Returns ASCII value, or special keycode.
+	*/
+	virtual int read();
+	virtual bool available();
+	int get_type(){
+		return DRIVER_TYPE_KEYBOARD;
 	}
 };
 
