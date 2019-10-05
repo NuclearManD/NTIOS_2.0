@@ -27,5 +27,6 @@ int load_drivers(){{
 {}
 {}
 {}
+{}
 	return NUM_DRIVERS;
 }}

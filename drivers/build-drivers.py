@@ -21,6 +21,7 @@ else:
     driver_set = ''
     preinits = ''
     inits = ''
+    postinits = ''
 
     include_str = ''
 
@@ -40,6 +41,9 @@ else:
             
         if 'init' in conf.keys():
             inits+=call_template.format(conf['init'])
+            
+        if 'postinit' in conf.keys():
+            postinits+=call_template.format(conf['postinit'])
 
         driver_set+=set_driver_template.format(n_drivers, conf['name'])
         
@@ -47,4 +51,4 @@ else:
     
 
     with open('drivers.c', 'w') as f:
-        f.write(template.format(include_str, n_drivers, driver_set, preinits, inits))
+        f.write(template.format(include_str, n_drivers, driver_set, preinits, inits, postinits))

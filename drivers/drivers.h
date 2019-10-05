@@ -13,6 +13,11 @@
 
 #define CHAR_BACKSPACE 8
 
+#define g_stdo ::stdo
+#define g_stde ::stde
+#define g_available ::available
+#define g_read ::read
+
 class Driver{
 public:
 	virtual char* get_path();
