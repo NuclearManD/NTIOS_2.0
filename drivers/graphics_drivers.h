@@ -91,12 +91,14 @@ public:
 	}
 };
 
+char drv_display_cnt;
+
 class GraphicsDisplay: public Terminal{
 public:
-	GraphicsDisplay(GraphicsHardware* host, int stde_color = -1, int stdo_color = -1){
+	void display_setup(GraphicsHardware* host, int stde_color = -1, int stdo_color = -1){
 		this->host = host;
-		display_id = display_cnt;
-		display_cnt+=1;
+		display_id = drv_display_cnt;
+		drv_display_cnt+=1;
 		name[0]='m';
 		name[1]='o';
 		name[2]='n';
@@ -138,17 +140,17 @@ public:
 					stdo_color = 255;		// white
 					break;
 				case COLOR_TYPE_RGB8:
-					stde_color = 0xFF;		// white
+					stdo_color = 0xFF;		// white
 					break;
 				case COLOR_TYPE_NES8:
 				case COLOR_TYPE_NES16:
-					stde_color = 1;			// color 1 (whichever it is)
+					stdo_color = 1;			// color 1 (whichever it is)
 					break;
 				case COLOR_TYPE_GRAY16:
-					stde_color = 0xFFFF;	// white
+					stdo_color = 0xFFFF;	// white
 					break;
 				case COLOR_TYPE_RGB16:
-					stde_color = 0xFFFF;	// white
+					stdo_color = 0xFFFF;	// white
 					break;
 			}
 		}
@@ -179,10 +181,9 @@ public:
 	char* get_path(){
 		return name;
 	}
-private:
+protected:
 	char display_id;
 	char name[6];
-	static char display_cnt;
 	GraphicsHardware* host;
 	
 	int stde_c, stdo_c;

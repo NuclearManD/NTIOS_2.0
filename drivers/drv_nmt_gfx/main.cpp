@@ -41,7 +41,7 @@ public:
 	}
 	
 	bool is_connected(){
-		return gfx.is_connected();
+		return true;//gfx.is_connected();
 	}
 	
 	void set_cursor_pos(unsigned int x, unsigned int y){
@@ -81,6 +81,8 @@ public:
 	}
 	
 	void print(char x){
+		if(x=='\n')
+			x = '\r';
 		if(has_started){
 			if(selected_font==-1){
 				gfx.print(x);
@@ -115,12 +117,14 @@ public:
 		}
 	}
 	void println(char x){
+		if(x=='\n')
+			x = '\r';
 		if(has_started){
 			if(selected_font==-1){
 				gfx.println(x);
 			}else{
 				print(x);
-				print('\n');
+				print('\r');
 			}
 		}
 	}
