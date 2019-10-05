@@ -1,9 +1,3 @@
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h" // for attachInterrupt, FALLING
-#else
-#include "WProgram.h"
-#endif
-
 #include <NMT_GFX.h>
 
 NMT_GFX gfx;

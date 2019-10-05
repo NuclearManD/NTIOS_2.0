@@ -1,9 +1,8 @@
+#include <avr/io.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h" // for attachInterrupt, FALLING
-#else
-#include "WProgram.h"
-#endif
+#define SERIAL_BUFFER_SIZE 64
 
 class UART0_Term: public Terminal{
 public:
@@ -22,19 +21,25 @@ public:
 	char read(){
 		return Serial.read();
 	}
+	
+	void setup_port(int baudrate){
+		
+		UBRRL = 
+		UBRRH = 
+	};
 
 	void uart_preinit(){
-		Serial.begin(115200);
+		
 		set_primary_terminal(this);
 		g_stdo("UART set to primary terminal.\n");
-	}
-
-	void uart_init(){
 	}
 	
 	char* get_path(){
 		return "uart0";
 	}
+protected:
+	int bytes_in_ready;
+	char in_buffer[SERIAL_BUFFER_SIZE];
 };
 
 UART0_Term uart;

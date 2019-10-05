@@ -2,12 +2,6 @@
 #define NTI_KERNEL_H
 #pragma GCC diagnostic warning "-fpermissive"
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h" // for attachInterrupt, FALLING
-#else
-#include "WProgram.h"
-#endif
-
 #include "programs/program.h"
 #include "drivers/drivers.h"
 
@@ -22,12 +16,7 @@ void Nsystem(char* inp);
 unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
-#include <GEAR.h>
-#include <PS2Keyboard.h>
-
-GearControl gr;
 byte data = 0;
-PS2Keyboard kbd;
 
 void (*reset)()=0;
 

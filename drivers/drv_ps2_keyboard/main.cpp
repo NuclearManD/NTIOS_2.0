@@ -1,11 +1,4 @@
-
 #include "PS2Keyboard.h"
-
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h" // for attachInterrupt, FALLING
-#else
-#include "WProgram.h"
-#endif
 
 class PS2_Keyboard: public Keyboard{
 public:

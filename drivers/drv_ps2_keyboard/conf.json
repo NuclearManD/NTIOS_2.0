@@ -3,5 +3,6 @@
 	"type":"keyboard",
 	"name":"ps2_kbd",
 	"preinit":"ps2_kbd.kbd_preinit",
-	"include":"main.cpp"
+	"include":"main.cpp",
+	"disabled":true
 }

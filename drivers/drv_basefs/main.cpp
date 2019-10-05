@@ -1,11 +1,4 @@
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h" // for attachInterrupt, FALLING
-#else
-#include "WProgram.h"
-#endif
-
-
 class RootFS: public FileSystem{
 public:
 	char* ls(char* dir, int index){
