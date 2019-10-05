@@ -1,0 +1,32 @@
+/*
+This file organizes the drivers.
+*/
+
+
+// includes
+
+#include "drivers.h"
+
+{}
+
+#define NUM_DRIVERS {}
+
+Driver* drivers[NUM_DRIVERS];
+
+int num_drivers(){{
+	return NUM_DRIVERS;
+}}
+
+Driver* get_driver(int i){{
+	if((i>=NUM_DRIVERS)||(i<0))return (Driver*)0;
+	
+	return drivers[i];
+}}
+
+int load_drivers(){{
+{}
+{}
+{}
+{}
+	return NUM_DRIVERS;
+}}

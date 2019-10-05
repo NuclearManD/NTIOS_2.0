@@ -1,0 +1,7 @@
+{
+	"path":"rootfs",
+	"type":"filesystem",
+	"name":"root",
+	"preinit":"preinit_root_fs",
+	"include":"main.cpp"
+}
