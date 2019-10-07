@@ -57,7 +57,7 @@ public:
 	virtual unsigned int width();
 	virtual unsigned int height();
 	
-	int tile_color(unsigned short a, byte b){
+	int tile_color(unsigned short a, unsigned char b){
 		return ERROR_NOT_SUPPORTED;
 	}
 	
@@ -76,8 +76,6 @@ public:
 		}
 		this->print('\n');
 	}
-	void println(StringSumHelper x){this->println(x.c_str());}
-	void print(StringSumHelper x){this->print(x.c_str());}
 	void println(const char* x){this->println((char*)x);}
 	void print(const char* x){this->print((char*)x);}
 	

@@ -1,3 +1,6 @@
+
+#include <string.h>
+
 #include "../../include/driver_api.h"
 
 char* driver_types[] = {

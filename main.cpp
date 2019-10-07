@@ -8,7 +8,7 @@ char loop_term_cmd[TERM_KBD_BUF];
 
 unsigned short loop_term_cnt = 0;
 
-int main(void) {
+int entry(void) {
 	k_init();
 	stdo(curdir);
 	stdo("$ ");
