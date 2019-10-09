@@ -15,6 +15,9 @@ extern void system(char* inp);
 extern char* fs_resolve(char* fs_buffer, char* loc);
 extern bool dircmp(char* a, char* b);
 
+#ifdef __AVRASM_VERSION__
+// AVR compiler does NOT have new and delete operators.
+
 void* operator new(size_t objsize) { 
     return malloc(objsize); 
 } 
@@ -22,6 +25,7 @@ void* operator new(size_t objsize) {
 void operator delete(void* obj) { 
     free(obj); 
 }
+#endif
 
 
 #endif
