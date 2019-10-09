@@ -67,7 +67,7 @@ int termctl_main(char** argv, int argc){
 			if(input==0){
 				failure = true;
 				stde(argv[2]);
-				stde(" is not a valid terminal.");
+				stde(" is not a valid terminal.\n");
 			}
 			if(output==0){
 				failure = true;
@@ -88,6 +88,57 @@ int termctl_main(char** argv, int argc){
 			stde("termctl -m [in] [out]");
 			return -1;
 		}
+	}else if(!strcmp(cmd, "-r")){
+		if(argc==3){
+			if(memcmp("tctl", argv[2], 4)==0){
+				for(int i=0;i<num_drivers();i++){
+					Driver* dev = get_driver(i);
+					if(dev->get_type()==DRIVER_TYPE_TERM){
+						if(!strcmp(argv[2], dev->get_path())){
+							int result = rm_driver(i);
+							if(result<0){
+								stde("Error removing ");
+								stde(argv[2]);
+								stde(result==ERROR_NOT_REMOVABLE ? ": Not removable." : ": Unknown error.");
+								return result-100;
+							}else
+								return 0;
+						}
+					}
+				}
+			}
+			// if we're here then the terminal is not tctl or does not exist.
+			stde(argv[2]);
+			stde(" is not a tctl terminal.");
+			return -1;
+		}else{
+			stde("termctl -r [dev]");
+			return -1;
+		}
+	}else if(!strcmp(cmd, "-u")){
+		if(argc==3){
+			for(int i=0;i<num_drivers();i++){
+				Driver* dev = get_driver(i);
+				if(dev->get_type()==DRIVER_TYPE_TERM){
+					if(!strcmp(argv[2], dev->get_path())){
+						stdo("Switching terminal to ");
+						stdo(dev->get_path());
+						set_primary_terminal((Terminal*)dev);
+						return 0;
+					}
+				}
+			}
+			// if we're here then the terminal is not tctl or does not exist.
+			stde(argv[2]);
+			stde(" is not a terminal.");
+			return -1;
+		}else{
+			stde("termctl -r [dev]");
+			return -1;
+		}
+	}else{
+		stde(argv[1]);
+		stde("?");
 	}
 	return 0;
 }

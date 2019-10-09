@@ -270,6 +270,7 @@ void k_init() {
   Serial.begin(115200);
   curdir[0] = '/';
   load_drivers();
+  add_driver(new VoidTerminal());
 
   stdo("Running program setup...\n");
   init_programs();

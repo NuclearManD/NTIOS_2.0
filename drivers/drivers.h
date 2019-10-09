@@ -85,7 +85,7 @@ public:
 	char read(){return 0;}
 	bool available(){return false;}
 	char* get_path(){
-		return "";
+		return "null";
 	}
 };
 
