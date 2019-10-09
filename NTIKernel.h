@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "platform.h"
 #include "programs/program.h"
 #include "drivers/drivers.h"
