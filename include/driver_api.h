@@ -5,5 +5,7 @@
 
 int num_drivers();
 Driver* get_driver(int i);
+int add_driver(Driver* driver);
+int rm_driver(int driver_id);
 
 #endif

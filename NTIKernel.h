@@ -253,6 +253,7 @@ nonewline:
 void k_init() {
   curdir[0] = '/';
   load_drivers();
+  add_driver(new VoidTerminal());
 
   stdo("Running program setup...\n");
   init_programs();
