@@ -10,6 +10,8 @@
 #define ERROR_NOT_SUPPORTED -1
 #define ERROR_NO_HARDWARE -2
 #define ERROR_ALREADY_STARTED -3
+#define ERROR_NOT_REMOVABLE -4
+#define ERROR_NOT_EXISTING -5
 
 #define CHAR_BACKSPACE 8
 
@@ -94,6 +96,8 @@ void set_root_fs(FileSystem* fs);
 
 int num_drivers();
 Driver* get_driver(int i);
+int add_driver(Driver* driver);
+int rm_driver(int driver_id);
 int load_drivers();
 
 #include "../include/kernel_functions.h"

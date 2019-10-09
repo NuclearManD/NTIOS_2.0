@@ -9,24 +9,42 @@ This file organizes the drivers.
 
 {}
 
-#define NUM_DRIVERS {}
+#define NUM_STARTUP_DRIVERS {}
 
-Driver* drivers[NUM_DRIVERS];
+Driver** drivers;
+int _num_drivers = NUM_STARTUP_DRIVERS;
 
 int num_drivers(){{
-	return NUM_DRIVERS;
+	return _num_drivers;
 }}
 
 Driver* get_driver(int i){{
-	if((i>=NUM_DRIVERS)||(i<0))return (Driver*)0;
+	if((i>=_num_drivers)||(i<0))return (Driver*)0;
 	
 	return drivers[i];
 }}
 
+int add_driver(Driver* driver){
+	_num_drivers++;
+	drivers = (Driver**)realloc(drivers, sizeof(Driver*)*_num_drivers);
+	drivers[_num_drivers-1] = driver;
+	return _num_drivers-1;
+}
+
+int rm_driver(int driver_id){
+	if(driver_id<NUM_STARTUP_DRIVERS)return ERROR_NOT_REMOVABLE;
+	if(driver_id>=_num_drivers)return ERROR_NOT_EXISTING;
+	_num_drivers--;
+	drivers[driver_id] = drivers[_num_drivers];
+	drivers = (Driver**)realloc(drivers, sizeof(Driver*)*_num_drivers);
+	return 0;
+}
+
 int load_drivers(){{
+	drivers = (Driver**)malloc(sizeof(Driver*)*NUM_STARTUP_DRIVERS);
 {}
 {}
 {}
 {}
-	return NUM_DRIVERS;
+	return _num_drivers;
 }}
