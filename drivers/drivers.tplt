@@ -14,6 +14,8 @@ This file organizes the drivers.
 Driver** drivers;
 int _num_drivers = NUM_STARTUP_DRIVERS;
 
+char drv_display_cnt = 0;
+
 int num_drivers(){{
 	return _num_drivers;
 }}
@@ -42,9 +44,16 @@ int rm_driver(int driver_id){{
 
 int load_drivers(){{
 	drivers = (Driver**)malloc(sizeof(Driver*)*NUM_STARTUP_DRIVERS);
+	
+	preinit_platform_drivers();
 {}
+
+	init_platform_drivers();
 {}
+
+	postinit_platform_drivers();
 {}
+
 {}
 	return _num_drivers;
 }}

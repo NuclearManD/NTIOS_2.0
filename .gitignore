@@ -48,3 +48,7 @@ Temporary Items
 
 programs/program.c
 drivers/drivers.c
+*.elf
+*.bin
+build/*
+notes/*

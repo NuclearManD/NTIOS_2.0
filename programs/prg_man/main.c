@@ -1,5 +1,7 @@
 #define MAN_INSTALLED
 
+#include <string.h>
+
 char** man_topics;
 char** man_text;
 int n_topics;

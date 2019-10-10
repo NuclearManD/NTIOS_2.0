@@ -1,5 +1,7 @@
-#include "../../include/driver_api.h"
-#include "../../include/kernel_functions.h" // new and delete on AVR
+#include "driver_api.h"
+#include "kernel_functions.h" // new and delete on AVR
+
+#include <stdio.h>
 
 int ls_termctl_instance = 0;
 
@@ -99,7 +101,10 @@ int termctl_main(char** argv, int argc){
 							if(result<0){
 								stde("Error removing ");
 								stde(argv[2]);
-								stde(result==ERROR_NOT_REMOVABLE ? ": Not removable." : ": Unknown error.");
+								if(result==ERROR_NOT_REMOVABLE)
+									stde(": Not removable.");
+								else
+									stde(": Unknown error.");
 								return result-100;
 							}else
 								return 0;

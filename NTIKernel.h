@@ -1,13 +1,11 @@
 #ifndef NTI_KERNEL_H
 #define NTI_KERNEL_H
-#pragma GCC diagnostic warning "-fpermissive"
+//#pragma GCC diagnostic warning "-fpermissive"
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h" // for attachInterrupt, FALLING
-#else
-#include "WProgram.h"
-#endif
-
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 #include "programs/program.h"
 #include "drivers/drivers.h"
 
@@ -22,16 +20,12 @@ void Nsystem(char* inp);
 unsigned short len(char* d);
 #define CPU_ATMEL_NTISYS
 
-#include <GEAR.h>
-#include <PS2Keyboard.h>
-
-GearControl gr;
-byte data = 0;
-PS2Keyboard kbd;
+unsigned char data = 0;
 
 void (*reset)()=0;
 
-Terminal* primary_term = new VoidTerminal();
+VoidTerminal void_term;
+Terminal* primary_term = &void_term;
 FileSystem* root_fs;
 
 void set_primary_terminal(Terminal* term){
@@ -55,8 +49,7 @@ bool available(){
   return primary_term->available();
 }
 
-char* int_to_str(int i){
-  char* o=malloc(5);
+char* int_to_str(int i, char* o){
   char* a="0123456789ABCDEF";
   o[0] = a[(i >> 12) & 0xF];
   o[1] = a[(i >> 8) & 0xF];
@@ -66,9 +59,11 @@ char* int_to_str(int i){
   return o;
 }
 int freeRam() {
-  extern int __heap_start, *__brkval; 
+  /*extern int __heap_start, *__brkval; 
   int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+  */
+  return -1;
 }
 
 unsigned short len(char* d){
@@ -79,20 +74,10 @@ unsigned short len(char* d){
 }
 int to_int(char* str){
   int out=0;
-  for(byte i=0;i<len(str);i++){
+  for(unsigned char i=0;i<len(str);i++){
     out+=pow(10,i)*(str[i]-'0');
   }
   return out;
-}
-
-int launch(void (*a)(),void (*b)(),char* name="?", void (*c)()=__empty){
-  return gr.addProcess(a,b,name,c,P_KILLER|P_KILLABLE);  // do this before addProcess() to get ID of next new process
-}
-
-void gear_stopwait(){
-  for(byte i=0;i<gr.processes;i++){
-    gr.ftimes[i]=millis()+gr.fupd_rate;
-  }
 }
 
 char curdir[128];
@@ -194,7 +179,7 @@ char buf_0x10[256];
 
 void system(char* inp){
   char* args[10];
-  byte cnt=1;
+  unsigned char cnt=1;
   char* src=buf_0x10;
   args[0]=src;
   
@@ -204,7 +189,7 @@ void system(char* inp){
       src[i]=c;
     else{
       src[i]=0;
-      args[cnt]=(char*)(i+1+(unsigned short)src);
+      args[cnt]=i+1+src;
       
       cnt++;
       while(inp[i+1]==' ')
@@ -212,12 +197,11 @@ void system(char* inp){
     }
   }
   src[len(inp)]=0;
-  if(!strcmp(args[0],"su")){
-    gr.p_perms[gr.cprocess]=0xFF;
-  }else if(!strcmp(args[0],"mem")){
-    stdo("RAM bytes free: ");
+  if(!strcmp(args[0],"mem")){
+    stdo("RAM unsigned chars free: ");
     char buf[10];
-    stdo(itoa(freeRam(), buf, 10));
+	snprintf(buf, 10,  "%i", freeRam());
+    stdo(buf);
   }else if(!strcmp(args[0],"ls")){
     char* path;
     if(cnt<2)
@@ -253,7 +237,11 @@ void system(char* inp){
     else{
       int result = mkdir(args[1]);
       if(result!=0){
-        stde(("Error "+String(result)+" in mkdir").c_str());
+		char buf[10];
+        stde("Error ");
+		snprintf(buf, 10,  "%i", result);
+		stde(buf);
+		stde(" in mkdir");
       }
     }
   }else if(!strcmp(args[0],"reboot")){
@@ -267,15 +255,12 @@ nonewline:
   return;
 }
 void k_init() {
-  Serial.begin(115200);
   curdir[0] = '/';
   load_drivers();
   add_driver(new VoidTerminal());
 
   stdo("Running program setup...\n");
   init_programs();
-  
-  randomSeed(millis()+analogRead(A5));
 
   stdo("Entering user mode...\n\n");
 }

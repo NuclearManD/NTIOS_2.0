@@ -20,18 +20,21 @@
 #define g_available ::available
 #define g_read ::read
 
+#include "kernel_functions.h"
+#include "platform_proto.h"
+
 class Driver{
 public:
-	virtual char* get_path();
-	virtual int get_type();
+	virtual char* get_path() = 0;
+	virtual int get_type() = 0;
 };
 
 class Terminal: public Driver{
 public:
-	virtual void stdo(char* d);
-	virtual void stde(char* d);
-	virtual char read();
-	virtual bool available();
+	virtual void stdo(char* d) = 0;
+	virtual void stde(char* d) = 0;
+	virtual char read() = 0;
+	virtual bool available() = 0;
 	int get_type(){
 		return DRIVER_TYPE_TERM;
 	}
@@ -67,11 +70,11 @@ public:
 
 class FileSystem: public Driver{
 public:
-	virtual char* ls(char* dir, int index);
-	virtual bool isfile(char* dir);
-	virtual bool exists(char* dir);
-	virtual int mkdir(char* dir);
-	virtual FileHandle* open(char* dir, int mode);
+	virtual char* ls(char* dir, int index) = 0;
+	virtual bool isfile(char* dir) = 0;
+	virtual bool exists(char* dir) = 0;
+	virtual int mkdir(char* dir) = 0;
+	virtual FileHandle* open(char* dir, int mode) = 0;
 	
 	int get_type(){
 		return DRIVER_TYPE_FS;
@@ -91,6 +94,8 @@ public:
 
 #include "graphics_drivers.h"
 
+#include <stdlib.h>
+
 void set_primary_terminal(Terminal* term);
 void set_root_fs(FileSystem* fs);
 
@@ -99,8 +104,5 @@ Driver* get_driver(int i);
 int add_driver(Driver* driver);
 int rm_driver(int driver_id);
 int load_drivers();
-
-#include "../include/kernel_functions.h"
-#include "drivers.c"
 
 #endif
