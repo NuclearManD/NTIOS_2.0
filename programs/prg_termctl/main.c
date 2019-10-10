@@ -1,5 +1,7 @@
-#include "../../include/driver_api.h"
-#include "../../include/kernel_functions.h" // new and delete on AVR
+#include "driver_api.h"
+#include "kernel_functions.h" // new and delete on AVR
+
+#include <stdio.h>
 
 int ls_termctl_instance = 0;
 

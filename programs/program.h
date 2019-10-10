@@ -4,9 +4,9 @@
 
 #include <string.h>
 
-#include "../include/kernel_functions.h"
-#include "program.c"
+#include "kernel_functions.h"
 
 int execute_program(char** argv, int argc);
+void init_programs();
 
 #endif

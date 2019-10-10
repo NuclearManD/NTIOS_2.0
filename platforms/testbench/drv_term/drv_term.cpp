@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/select.h>
 
+#include "driver_api.h"
+
 class StdTerm: public Terminal{
 public:
 	void write(char c){

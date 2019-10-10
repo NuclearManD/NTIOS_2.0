@@ -89,7 +89,7 @@ public:
 	}
 };
 
-char drv_display_cnt;
+extern char drv_display_cnt;
 
 class GraphicsDisplay: public Terminal{
 public:

@@ -51,3 +51,4 @@ drivers/drivers.c
 *.elf
 *.bin
 build/*
+notes/*

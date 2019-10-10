@@ -20,6 +20,9 @@
 #define g_available ::available
 #define g_read ::read
 
+#include "kernel_functions.h"
+#include "platform_proto.h"
+
 class Driver{
 public:
 	virtual char* get_path() = 0;
@@ -91,6 +94,8 @@ public:
 
 #include "graphics_drivers.h"
 
+#include <stdlib.h>
+
 void set_primary_terminal(Terminal* term);
 void set_root_fs(FileSystem* fs);
 
@@ -99,8 +104,5 @@ Driver* get_driver(int i);
 int add_driver(Driver* driver);
 int rm_driver(int driver_id);
 int load_drivers();
-
-#include "../include/kernel_functions.h"
-#include "drivers.c"
 
 #endif

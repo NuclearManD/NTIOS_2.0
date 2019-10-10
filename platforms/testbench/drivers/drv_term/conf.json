@@ -1,7 +1,0 @@
-{
-	"path":"term",
-	"type":"term",
-	"name":"term",
-	"preinit":"term.preinit",
-	"include":"main.cpp"
-}
