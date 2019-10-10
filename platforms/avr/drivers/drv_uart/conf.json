@@ -1,7 +1,0 @@
-{
-	"path":"uart",
-	"type":"term",
-	"name":"uart",
-	"preinit":"uart.uart_preinit",
-	"include":"main.cpp"
-}
