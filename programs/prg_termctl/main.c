@@ -99,7 +99,10 @@ int termctl_main(char** argv, int argc){
 							if(result<0){
 								stde("Error removing ");
 								stde(argv[2]);
-								stde(result==ERROR_NOT_REMOVABLE ? ": Not removable." : ": Unknown error.");
+								if(result==ERROR_NOT_REMOVABLE)
+									stde(": Not removable.");
+								else
+									stde(": Unknown error.");
 								return result-100;
 							}else
 								return 0;

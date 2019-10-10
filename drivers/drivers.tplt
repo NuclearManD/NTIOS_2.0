@@ -6,7 +6,6 @@ This file organizes the drivers.
 // includes
 
 #include "drivers.h"
-#include <avr/interrupt.h>
 
 {}
 
@@ -45,7 +44,7 @@ int load_drivers(){{
 	drivers = (Driver**)malloc(sizeof(Driver*)*NUM_STARTUP_DRIVERS);
 {}
 {}
-	sei(); // Enable interrupts after preinit
+	//sei(); // Enable interrupts after preinit
 {}
 {}
 	return _num_drivers;

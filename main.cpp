@@ -1,5 +1,3 @@
-#pragma GCC diagnostic warning "-fpermissive"
-
 #include "NTIKernel.h"
 
 #define TERM_KBD_BUF 128

@@ -1,11 +1,11 @@
 #ifndef NTI_KERNEL_H
 #define NTI_KERNEL_H
-#pragma GCC diagnostic warning "-fpermissive"
+//#pragma GCC diagnostic warning "-fpermissive"
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
-#include "platform.h"
 #include "programs/program.h"
 #include "drivers/drivers.h"
 
@@ -59,9 +59,11 @@ char* int_to_str(int i, char* o){
   return o;
 }
 int freeRam() {
-  extern int __heap_start, *__brkval; 
+  /*extern int __heap_start, *__brkval; 
   int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+  */
+  return -1;
 }
 
 unsigned short len(char* d){
@@ -187,7 +189,7 @@ void system(char* inp){
       src[i]=c;
     else{
       src[i]=0;
-      args[cnt]=(char*)(i+1+(unsigned short)src);
+      args[cnt]=i+1+src;
       
       cnt++;
       while(inp[i+1]==' ')
@@ -198,7 +200,8 @@ void system(char* inp){
   if(!strcmp(args[0],"mem")){
     stdo("RAM unsigned chars free: ");
     char buf[10];
-    stdo(itoa(freeRam(), buf, 10));
+	snprintf(buf, 10,  "%i", freeRam());
+    stdo(buf);
   }else if(!strcmp(args[0],"ls")){
     char* path;
     if(cnt<2)
@@ -236,7 +239,8 @@ void system(char* inp){
       if(result!=0){
 		char buf[10];
         stde("Error ");
-		stde(itoa(result, buf, 10));
+		snprintf(buf, 10,  "%i", result);
+		stde(buf);
 		stde(" in mkdir");
       }
     }

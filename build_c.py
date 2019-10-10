@@ -106,8 +106,6 @@ def setup_drivers():
     with open('./build/src/drivers/drivers.c', 'w') as f:
         f.write(template.format(include_str, n_drivers, driver_set, preinits, inits, postinits))
 
-sys.argv.append('avr')
-
 if len(sys.argv)<2:
     print("Usage: build_c.py [platform]")
 else:
