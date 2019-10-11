@@ -35,13 +35,9 @@ public:
 	virtual void stde(char* d) = 0;
 	virtual char read() = 0;
 	virtual bool available() = 0;
-	int get_type(){
-		return DRIVER_TYPE_TERM;
-	}
-	void set_blinking(bool blink){}
-	int set_font(unsigned char** font, int height, int length){
-		return ERROR_NOT_SUPPORTED;
-	}
+	int get_type();
+	void set_blinking(bool blink);
+	int set_font(unsigned char** font, int height, int length);
 };
 
 class Keyboard: public Driver{
@@ -51,9 +47,7 @@ public:
 	*/
 	virtual int read();
 	virtual bool available();
-	int get_type(){
-		return DRIVER_TYPE_KEYBOARD;
-	}
+	int get_type();
 };
 
 class FileHandle{
@@ -63,9 +57,7 @@ public:
 	virtual int tell();
 	virtual void flush();
 	virtual void close();
-	void write(char* str){
-		this->write(str, len(str));
-	}
+	void write(char* str);
 };
 
 class FileSystem: public Driver{
@@ -76,25 +68,19 @@ public:
 	virtual int mkdir(char* dir) = 0;
 	virtual FileHandle* open(char* dir, int mode) = 0;
 	
-	int get_type(){
-		return DRIVER_TYPE_FS;
-	}
+	int get_type();
 };
 
 class VoidTerminal: public Terminal{
 public:
 	void stdo(char* d){}
 	void stde(char* d){}
-	char read(){return 0;}
-	bool available(){return false;}
-	char* get_path(){
-		return "null";
-	}
+	char read();
+	bool available();
+	char* get_path();
 };
 
 #include "graphics_drivers.h"
-
-#include <stdlib.h>
 
 void set_primary_terminal(Terminal* term);
 void set_root_fs(FileSystem* fs);
