@@ -6,7 +6,7 @@ namespace atmega328{
 class HW_UART: public Terminal{
 public:
 	void write(char c){
-		PORTB = c;
+		PORTD = c;
 	}
 	void stdo(char* d){
 		for(int i=0;d[i];i++)write(d[i]);
@@ -40,7 +40,7 @@ public:
 	}
 
 	void preinit(){
-		DDRB = 0xFF;
+		DDRD = 0xFF;
 	}
 	
 	char* get_path(){
