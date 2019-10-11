@@ -1,12 +1,16 @@
 #include "driver_api.h"
 #include <avr/io.h> // This contains the definitions of the terms used
 
+#define USART_BAUDRATE 19200 
+#define BAUD_PRESCALE (((F_CPU / (USART_BAUDRATE * 16UL))) - 1)
+
 namespace atmega328{
 
 class HW_UART: public Terminal{
 public:
 	void write(char c){
-		PORTD = c;
+		while ((UCSR0A & (1 << UDRE0)) == 0);
+		UDR0 = c;
 	}
 	void stdo(char* d){
 		for(int i=0;d[i];i++)write(d[i]);
@@ -14,33 +18,22 @@ public:
 
 	void stde(char* d){
 		stdo(d);
-		/*printf("%s",d);
-		fflush(stdout);*/
 	}
 
 	bool available(){
-		/*struct timeval tv = { 0L, 0L };
-		fd_set fds;
-		FD_ZERO(&fds);
-		FD_SET(0, &fds);
-		return select(1, &fds, NULL, NULL, &tv);*/
-		return false;
+		return (UCSR0A & (1 << RXC0)) != 0;
 	}
 
 	char read(){
-		/*int r;
-		unsigned char c;
-		if ((r = ::read(0, &c, sizeof(c))) < 0) {
-			return r;
-		} else {
-			write(8);
-			return c;
-		}*/
-		return 0;
+		return UDR0;
 	}
 
 	void preinit(){
-		DDRD = 0xFF;
+		UCSR0B |= (1 << RXEN0) | (1 << TXEN0);   // Turn on the transmission and reception circuitry 
+		UCSR0C |= (1 << UCSZ00) | (1 << UCSZ01); // Use 8-bit character sizes 
+
+		UBRR0H = (BAUD_PRESCALE >> 8); // Load upper 8-bits of the baud rate value into the high byte of the UBRR register 
+		UBRR0L = BAUD_PRESCALE; // Load lower 8-bits of the baud rate value into the low byte of the UBRR register 
 	}
 	
 	char* get_path(){
