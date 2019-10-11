@@ -1,5 +1,28 @@
 #include "platform.h"
 #include "driver_api.h"
+#include <stdlib.h>
+
+extern "C" void __cxa_pure_virtual() { while (1); }
+
+void *operator new(size_t s) 
+{ 
+    return malloc(s); 
+} 
+  
+void *operator new[](size_t s) 
+{ 
+    return malloc(s); 
+} 
+  
+void operator delete(void *m) 
+{ 
+    free(m); 
+} 
+  
+void operator delete[](void *m) 
+{ 
+    free(m); 
+} 
 
 int main(void){
 	// initialization stuff goes here

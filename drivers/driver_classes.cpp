@@ -27,8 +27,12 @@ void GraphicsHardware::println(char* x){
 	}
 	this->print('\n');
 }
-void GraphicsHardware::println(const char* x){this->println((char*)x);}
-void GraphicsHardware::print(const char* x){this->print((char*)x);}
+void GraphicsHardware::println(const char* x){
+	this->println((char*)x);
+}
+void GraphicsHardware::print(const char* x){
+	this->print((char*)x);
+}
 
 
 int GraphicsHardware::get_type(){
@@ -36,7 +40,7 @@ int GraphicsHardware::get_type(){
 }
 
 char* GraphicsHardware::get_desc(){
-	return "unknown";
+	return (char*)"unknown";
 }
 
 /*
@@ -46,7 +50,7 @@ char* GraphicsHardware::get_desc(){
 
 
 
-void GraphicsDisplay::display_setup(GraphicsHardware* host, int stde_color = -1, int stdo_color = -1){
+void GraphicsDisplay::display_setup(GraphicsHardware* host, int stde_color, int stdo_color){
 	this->host = host;
 	display_id = drv_display_cnt;
 	drv_display_cnt+=1;

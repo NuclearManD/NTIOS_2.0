@@ -1,3 +1,6 @@
+#ifndef GRAPHICS_DRIVERS_H
+#define GRAPHICS_DRIVERS_H
+
 
 #define COLOR_TYPE_BW		0
 #define COLOR_TYPE_GREY8	1
@@ -90,3 +93,5 @@ protected:
 	
 	int stde_c, stdo_c;
 };
+
+#endif

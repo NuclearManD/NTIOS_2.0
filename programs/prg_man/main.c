@@ -1,9 +1,10 @@
 #define MAN_INSTALLED
 
 #include <string.h>
+#include <stdlib.h>
 
-char** man_topics;
-char** man_text;
+const char** man_topics;
+const char** man_text;
 int n_topics;
 
 int man_main(char** argv, int argc){
@@ -33,14 +34,14 @@ int man_main(char** argv, int argc){
 }
 
 void man_init(){
-	man_topics = (char**)malloc(0);
-	man_text = (char**)malloc(0);
+	man_topics = (const char**)malloc(0);
+	man_text = (const char**)malloc(0);
 	n_topics = 0;
 }
 
-void man_add_topic(char* topic, char* text){
-	man_topics = (char**)realloc(man_topics, (n_topics+1)*sizeof(char*));
-	man_text = (char**)realloc(man_text, (n_topics+1)*sizeof(char*));
+void man_add_topic(const char* topic, const char* text){
+	man_topics = (const char**)realloc(man_topics, (n_topics+1)*sizeof(const char*));
+	man_text = (const char**)realloc(man_text, (n_topics+1)*sizeof(const char*));
 	man_topics[n_topics] = topic;
 	man_text[n_topics] = text;
 	n_topics++;
