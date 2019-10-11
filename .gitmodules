@@ -1,9 +1,3 @@
-[submodule "platforms/avr/drivers/drv_uart/avr_uart"]
-	path = platforms/avr/drivers/drv_uart/avr_uart
-	url = https://github.com/alx741/avr_uart.git
-[submodule "platforms/esp32/esp-idf"]
-	path = platforms/esp32/esp-idf
-	url = https://github.com/espressif/esp-idf.git
 [submodule "platforms/esp32/arduino-esp32"]
 	path = platforms/esp32/arduino-esp32
 	url = https://github.com/espressif/arduino-esp32.git
