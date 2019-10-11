@@ -42,6 +42,12 @@ void stdo(char* d){
 void stde(char* d){
   primary_term->stde(d);
 }
+void stdo(const char* d){
+  primary_term->stdo((char*)d);
+}
+void stde(const char* d){
+  primary_term->stde((char*)d);
+}
 char read(){
   return primary_term->read();
 }
@@ -50,7 +56,7 @@ bool available(){
 }
 
 char* int_to_str(int i, char* o){
-  char* a="0123456789ABCDEF";
+  const char* a="0123456789ABCDEF";
   o[0] = a[(i >> 12) & 0xF];
   o[1] = a[(i >> 8) & 0xF];
   o[2] = a[(i >> 4) & 0xF];
@@ -87,7 +93,7 @@ char* fs_resolve(char* fs_buffer, char* loc){
   int copied=0;
   int last_index=0;
   if(loc[0]!='/'){
-    for(int i=0;i<=strlen(curdir);i++){
+    for(unsigned int i=0;i<=strlen(curdir);i++){
       if(curdir[i]=='/'||curdir[i]==0){
         if(!strcmp(tmp,".")){
           ;
@@ -112,7 +118,7 @@ char* fs_resolve(char* fs_buffer, char* loc){
     }
     copied=0;
   }
-  for(int i=0;i<=strlen(loc);i++){
+  for(unsigned int i=0;i<=strlen(loc);i++){
     if(loc[i]=='/'||loc[i]==0){
       if(!strcmp(tmp,".")){
         ;
@@ -151,7 +157,7 @@ bool dircmp(char* a, char* b){
   char bufb[len(b)+16];
   fs_resolve(bufa, a);
   fs_resolve(bufb, b);
-  
+  // TODO: finish this
 }
 
 bool exists(char* path){

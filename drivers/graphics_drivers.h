@@ -1,3 +1,6 @@
+#ifndef GRAPHICS_DRIVERS_H
+#define GRAPHICS_DRIVERS_H
+
 
 #define COLOR_TYPE_BW		0
 #define COLOR_TYPE_GREY8	1
@@ -57,128 +60,32 @@ public:
 	virtual unsigned int width();
 	virtual unsigned int height();
 	
-	int tile_color(unsigned short a, unsigned char b){
-		return ERROR_NOT_SUPPORTED;
-	}
+	int tile_color(unsigned short a, unsigned char b);
 	
-	void print(char* x){
-		int i=0;
-		while(x[i]!=0){
-			this->print(x[i]);
-			i++;
-		}
-	}
-	void println(char* x){
-		int i=0;
-		while(x[i]!=0){
-			this->print(x[i]);
-			i++;
-		}
-		this->print('\n');
-	}
-	void println(const char* x){this->println((char*)x);}
-	void print(const char* x){this->print((char*)x);}
+	void print(char* x);
+	void println(char* x);
+	void println(const char* x);
+	void print(const char* x);
 	
 	
-	int get_type(){
-		return DRIVER_TYPE_GRAPHICS_HARDWARE;
-	}
+	int get_type();
 	
-	char* get_desc(){
-		return "unknown";
-	}
+	char* get_desc();
 };
 
 extern char drv_display_cnt;
 
 class GraphicsDisplay: public Terminal{
 public:
-	void display_setup(GraphicsHardware* host, int stde_color = -1, int stdo_color = -1){
-		this->host = host;
-		display_id = drv_display_cnt;
-		drv_display_cnt+=1;
-		name[0]='m';
-		name[1]='o';
-		name[2]='n';
-		name[3]='0'+(display_id/10);
-		name[4]='0'+(display_id%10);
-		name[5]=0;
-		
-		int color_type = host->get_color_type();
-		
-		if(stde_color==-1){
-			switch(color_type){
-				case COLOR_TYPE_BW:
-					stde_color = 1;			// white
-					break;
-				case COLOR_TYPE_GRAY8:
-					stde_color = 192;		// light gray
-					break;
-				case COLOR_TYPE_RGB8:
-					stde_color = 0xE0;		// red
-					break;
-				case COLOR_TYPE_NES8:
-				case COLOR_TYPE_NES16:
-					stde_color = 2;			// color 2 (whichever it is)
-					break;
-				case COLOR_TYPE_GRAY16:
-					stde_color = 0xD000;	// light gray
-					break;
-				case COLOR_TYPE_RGB16:
-					stde_color = 0xFC00;	// red
-					break;
-			}
-		}
-		if(stdo_color==-1){
-			switch(color_type){
-				case COLOR_TYPE_BW:
-					stdo_color = 1;			// white
-					break;
-				case COLOR_TYPE_GRAY8:
-					stdo_color = 255;		// white
-					break;
-				case COLOR_TYPE_RGB8:
-					stdo_color = 0xFF;		// white
-					break;
-				case COLOR_TYPE_NES8:
-				case COLOR_TYPE_NES16:
-					stdo_color = 1;			// color 1 (whichever it is)
-					break;
-				case COLOR_TYPE_GRAY16:
-					stdo_color = 0xFFFF;	// white
-					break;
-				case COLOR_TYPE_RGB16:
-					stdo_color = 0xFFFF;	// white
-					break;
-			}
-		}
-		stde_c = stde_color;
-		stdo_c = stdo_color;
-	}
-	void stdo(char* d){
-		host->set_color(stdo_c);
-		host->print(d);
-	}
-	void stde(char* d){
-		host->set_color(stde_c);
-		host->print(d);
-	}
-	char read(){
-		return -1;
-	}
-	bool available(){
-		return false;
-	}
-	int get_type(){
-		return DRIVER_TYPE_TERM;
-	}
-	void set_blinking(bool blink){}
-	int load_font(unsigned char** font, int height, int length){
-		return ERROR_NOT_SUPPORTED;
-	}
-	char* get_path(){
-		return name;
-	}
+	void display_setup(GraphicsHardware* host, int stde_color = -1, int stdo_color = -1);
+	void stdo(char* d);
+	void stde(char* d);
+	char read();
+	bool available();
+	int get_type();
+	void set_blinking(bool blink);
+	int load_font(unsigned char** font, int height, int length);
+	char* get_path();
 protected:
 	char display_id;
 	char name[6];
@@ -186,3 +93,5 @@ protected:
 	
 	int stde_c, stdo_c;
 };
+
+#endif
