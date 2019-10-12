@@ -1,5 +1,6 @@
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "driver_api.h"
 #include "kernel_functions.h"
@@ -9,9 +10,13 @@ const char* modes[] = {
 	"output"
 };
 
+void gpio_usage(){
+	stdo("usage:\n gpio [path]\n gpio -l\n gpio -s [path] [pin] [value]\n gpio -m [path] [pin] [mode:int]");
+}
+
 int gpio_main(char** argv, int argc){
 	if(argc<2){
-		stdo("usage:\n gpio [path]\n gpio -l\n gpio -s [path] [pin] [value]\n gpio -m [path] [pin] [mode:int]");
+		gpio_usage();
 		return 0;
 	}
 	char* path = argv[1];
@@ -27,7 +32,12 @@ int gpio_main(char** argv, int argc){
 				stdo(" pins.");
 			}
 		}
+		return 0;
 	}else if(!strcmp(path, "-s")){
+		if(argc<5){
+			gpio_usage();
+			return -1;
+		}
 		path = argv[2];
 		int pin = to_int(argv[3]);
 		int val = to_int(argv[4]);
@@ -47,6 +57,10 @@ int gpio_main(char** argv, int argc){
 			}
 		}
 	}else if(!strcmp(path, "-m")){
+		if(argc<5){
+			gpio_usage();
+			return -1;
+		}
 		path = argv[2];
 		int pin = to_int(argv[3]);
 		int mode = to_int(argv[4]);
@@ -81,10 +95,7 @@ int gpio_main(char** argv, int argc){
 				return 0;
 			}
 		}
-		stde("Not a driver path: ");
-		stde(path);
-		stde("\nUse 'gpio -l' to list gpio driver paths.");
-		return -1;
 	}
-	return 0;
+	stde("Path not found.\n");
+	return -1;
 }
