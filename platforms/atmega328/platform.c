@@ -33,6 +33,8 @@ void preinit_platform_drivers(){
 	atmega328::uart.preinit();
 	add_driver(&atmega328::uart);
 	set_primary_terminal(&atmega328::uart);
+	
+	add_driver(&atmega328::gpio);
 }
 void init_platform_drivers(){
 	

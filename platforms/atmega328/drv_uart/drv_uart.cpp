@@ -29,6 +29,8 @@ public:
 	}
 
 	void preinit(){
+		// From somewhere on the internet - forgive me for not saving it :/
+		
 		UCSR0B |= (1 << RXEN0) | (1 << TXEN0);   // Turn on the transmission and reception circuitry 
 		UCSR0C |= (1 << UCSZ00) | (1 << UCSZ01); // Use 8-bit character sizes 
 

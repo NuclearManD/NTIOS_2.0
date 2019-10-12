@@ -1,11 +1,14 @@
 
 #include <string.h>
 
-#include "../../include/driver_api.h"
+#include "driver_api.h"
 
 char* driver_types[] = {
 	"terminal",
 	"filesystem",
+	"graphics",
+	"keyboard",
+	"gpio port"
 };
 
 int dev_main(char** argv, int argc){

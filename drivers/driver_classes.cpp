@@ -198,3 +198,15 @@ bool VoidTerminal::available(){
 char* VoidTerminal::get_path(){
 	return (char*)"null";
 }
+void VoidTerminal::stdo(char* d){}
+void VoidTerminal::stde(char* d){}
+
+/*
+ * 
+ * GPIO PORT
+ * 
+ */
+
+int GPIOPort::get_type(){
+	return DRIVER_TYPE_GPIO;
+}

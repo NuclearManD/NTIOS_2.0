@@ -5,6 +5,10 @@
 #define DRIVER_TYPE_FS 1
 #define DRIVER_TYPE_GRAPHICS_HARDWARE 2
 #define DRIVER_TYPE_KEYBOARD 3
+#define DRIVER_TYPE_GPIO 4
+
+#define GPIO_INPUT 0
+#define GPIO_OUTPUT 1
 
 #define NOT_ERROR 0
 #define ERROR_NOT_SUPPORTED -1
@@ -73,11 +77,22 @@ public:
 
 class VoidTerminal: public Terminal{
 public:
-	void stdo(char* d){}
-	void stde(char* d){}
+	void stdo(char* d);
+	void stde(char* d);
 	char read();
 	bool available();
 	char* get_path();
+};
+
+class GPIOPort: public Driver{
+public:
+	virtual int get_size() = 0;
+	virtual int set_mode(int pin, int mode) = 0;
+	virtual int get_mode(int pin) = 0;
+	virtual int set_pin(int pin, bool value) = 0;
+	virtual bool get_pin(int pin) = 0;
+	
+	int get_type();
 };
 
 #include "graphics_drivers.h"
