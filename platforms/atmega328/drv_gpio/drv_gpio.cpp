@@ -13,10 +13,12 @@ class AVR_GPIO: public GPIOPort{
 		if(pin<8){
 			DDRD&=~(1<<pin);
 			DDRD|=mode<<pin;
-		}else if(pin<13){
+		}else if(pin<14){
+			pin-=8;
 			DDRB&=~(1<<pin);
 			DDRB|=mode<<pin;
 		}else if(pin<20){
+			pin-=14;
 			DDRC&=~(1<<pin);
 			DDRC|=mode<<pin;
 		}else{
@@ -25,18 +27,19 @@ class AVR_GPIO: public GPIOPort{
 		return 0;
 	}
 	int set_pin(int pin, bool value){
-		char v = value ? 1 : 0;
 		if(pin<2)
 			return ERROR_NOT_SUPPORTED;
 		if(pin<8){
 			PORTD&=~(1<<pin);
-			DDRD|=v<<pin;
-		}else if(pin<13){
-			DDRB&=~(1<<pin);
-			DDRB|=v<<pin;
+			if(value)PORTD|=1<<pin;
+		}else if(pin<14){
+			pin-=8;
+			PORTB&=~(1<<pin);
+			if(value)PORTB|=1<<pin;
 		}else if(pin<20){
-			DDRC&=~(1<<pin);
-			DDRC|=v<<pin;
+			pin-=14;
+			PORTC&=~(1<<pin);
+			if(value)PORTC|=1<<pin;
 		}else{
 			return ERROR_NO_HARDWARE;
 		}
@@ -47,9 +50,11 @@ class AVR_GPIO: public GPIOPort{
 			return 0;
 		if(pin<8){
 			return (PIND>>pin)&1;
-		}else if(pin<13){
+		}else if(pin<14){
+			pin-=8;
 			return (PINB>>pin)&1;
 		}else if(pin<20){
+			pin-=14;
 			return (PINC>>pin)&1;
 		}
 		return false;
@@ -58,11 +63,13 @@ class AVR_GPIO: public GPIOPort{
 		if(pin<0)
 			return 0;
 		if(pin<8){
-			return (PIND>>pin)&1;
-		}else if(pin<13){
-			return (PINB>>pin)&1;
+			return (DDRD>>pin)&1;
+		}else if(pin<14){
+			pin-=8;
+			return (DDRB>>pin)&1;
 		}else if(pin<20){
-			return (PINC>>pin)&1;
+			pin-=14;
+			return (DDRC>>pin)&1;
 		}
 		return 0;
 	}

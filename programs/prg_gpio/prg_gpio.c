@@ -6,12 +6,12 @@
 #include "kernel_functions.h"
 
 const char* modes[] = {
-	"input",
+	"input ",
 	"output"
 };
 
 void gpio_usage(){
-	stdo("usage:\n gpio [path]\n gpio -l\n gpio -s [path] [pin] [value]\n gpio -m [path] [pin] [mode:int]");
+	stdo("usage:\n gpio [path]\n gpio -l\n gpio -s [path] [pin] [0/1]\n gpio -m [path] [pin] [mode:int]");
 }
 
 int gpio_main(char** argv, int argc){
@@ -39,8 +39,8 @@ int gpio_main(char** argv, int argc){
 			return -1;
 		}
 		path = argv[2];
-		int pin = to_int(argv[3]);
-		int val = to_int(argv[4]);
+		int pin = (int)strtol(argv[3], NULL, 10);
+		bool val = argv[4][0]=='1';
 		for(int i=0;i<num_drivers();i++){
 			Driver* dev = get_driver(i);
 			if((dev->get_type()==DRIVER_TYPE_GPIO)&&(!strcmp(path, dev->get_path()))){
@@ -62,8 +62,8 @@ int gpio_main(char** argv, int argc){
 			return -1;
 		}
 		path = argv[2];
-		int pin = to_int(argv[3]);
-		int mode = to_int(argv[4]);
+		int pin = (int)strtol(argv[3], NULL, 10);
+		int mode = (int)strtol(argv[4], NULL, 10);
 		for(int i=0;i<num_drivers();i++){
 			Driver* dev = get_driver(i);
 			if((dev->get_type()==DRIVER_TYPE_GPIO)&&(!strcmp(path, dev->get_path()))){
@@ -87,7 +87,7 @@ int gpio_main(char** argv, int argc){
 				char buffer[8];
 				for(int j=0;j<gpio->get_size();j++){
 					stdo(itoa(j, buffer, 10));
-					stdo(" : ");
+					stdo("\t: ");
 					stdo(modes[gpio->get_mode(j)]);
 					stdo(" = ");
 					stdo(gpio->get_pin(j) ? "TRUE\n" : "FALSE\n");
