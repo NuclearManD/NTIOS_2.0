@@ -30,11 +30,14 @@ int main(void){
 }
 
 void preinit_platform_drivers(){
-	atmega328::uart.preinit();
-	add_driver(&atmega328::uart);
-	set_primary_terminal(&atmega328::uart);
+	atmega2560::HW_UART* primary = new atmega2560::HW_UART(0,19200);
+	add_driver(primary);
+	add_driver(new atmega2560::HW_UART(1,19200));
+	add_driver(new atmega2560::HW_UART(2,115200));
+	add_driver(new atmega2560::HW_UART(3,115200));
+	set_primary_terminal(primary);
 	
-	add_driver(&atmega328::gpio);
+	add_driver(&atmega2560::gpio);
 }
 void init_platform_drivers(){
 	

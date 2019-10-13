@@ -35,6 +35,16 @@ atmega328: build_base
 	
 atmega328p-upload: atmega328
 	avrdude -carduino -patmega328p -D -U flash:w:$(BIN_DIR)/ntios-atmega328.elf:e -b 115200 -P/dev/ttyUSB0
+	
+atmega2560: CC = avr-g++
+atmega2560: OUTFILE = $(BIN_DIR)/$(NTIOS_PREFIX)-atmega2560.elf
+atmega2560: P_CFLAGS = -mmcu=atmega2560 -DF_CPU=16000000UL
+atmega2560: build_base
+	$(CC) $(G_CFLAGS) $(P_CFLAGS) $(INCLUDES) -c platforms/atmega2560/platform.c -o $(BUILD_OBJ)/platform.o
+	$(CC) $(G_CFLAGS) $(P_CFLAGS) $(BUILD_OBJ)/NTIKernel.o $(BUILD_OBJ)/platform.o $(BUILD_OBJ)/drivers.o $(BUILD_OBJ)/program.o -o $(OUTFILE)
+	
+atmega2560-upload: atmega2560
+	avrdude -cwiring -patmega2560 -D -U flash:w:$(BIN_DIR)/ntios-atmega2560.elf:e -b 115200 -P/dev/ttyACM0
 
 
 clean:
