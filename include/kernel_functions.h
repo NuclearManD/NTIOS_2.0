@@ -15,6 +15,7 @@ extern void __empty();
 extern void system(char* inp);
 extern char* fs_resolve(char* fs_buffer, char* loc);
 extern bool dircmp(char* a, char* b);
+extern "C" char* itoa(int value, char* result, int base);
 
 
 #endif
