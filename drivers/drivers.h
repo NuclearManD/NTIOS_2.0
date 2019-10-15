@@ -10,6 +10,9 @@
 #define GPIO_INPUT 0
 #define GPIO_OUTPUT 1
 
+#define FILE_MODE_WR 0
+#define FILE_MODE_RD 1
+
 #define NOT_ERROR 0
 #define ERROR_NOT_SUPPORTED -1
 #define ERROR_NO_HARDWARE -2
@@ -56,15 +59,15 @@ public:
 
 class FileHandle{
 public:
-	virtual void read(char* buffer, int n);
-	virtual void write(char* buffer, int n);
-	virtual int tell();
-	virtual void flush();
-	virtual void close();
-	void write(char* str);
+	virtual int read(char* buffer, int n) = 0;
+	virtual int write(char* buffer, int n) = 0;
+	virtual int tell() = 0;
+	virtual void flush() = 0;
+	virtual void close() = 0;
+	int write(char* str);
 };
 
-class FileSystem: public Driver{
+class FileSystem{
 public:
 	virtual char* ls(char* dir, int index) = 0;
 	virtual bool isfile(char* dir) = 0;

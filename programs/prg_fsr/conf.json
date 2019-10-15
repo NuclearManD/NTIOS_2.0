@@ -1,0 +1,6 @@
+{
+	"include":"main.c",
+	"entry":"fsr_main",
+	"cmd":"fsr",
+	"disabled":false
+}
