@@ -38,10 +38,20 @@ void preinit_platform_drivers(){
 	set_primary_terminal(primary);
 	
 	add_driver(&atmega2560::gpio);
+	
+	// add rcS script
+	mount(new EEPROM_FS(), "/etc");
 }
 void init_platform_drivers(){
 	
 }
 void postinit_platform_drivers(){
-	
 }
+
+
+int freeRam() {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+

@@ -10,6 +10,9 @@
 #define GPIO_INPUT 0
 #define GPIO_OUTPUT 1
 
+#define FILE_MODE_WR 0
+#define FILE_MODE_RD 1
+
 #define NOT_ERROR 0
 #define ERROR_NOT_SUPPORTED -1
 #define ERROR_NO_HARDWARE -2
@@ -56,23 +59,12 @@ public:
 
 class FileHandle{
 public:
-	virtual void read(char* buffer, int n);
-	virtual void write(char* buffer, int n);
-	virtual int tell();
-	virtual void flush();
-	virtual void close();
-	void write(char* str);
-};
-
-class FileSystem: public Driver{
-public:
-	virtual char* ls(char* dir, int index) = 0;
-	virtual bool isfile(char* dir) = 0;
-	virtual bool exists(char* dir) = 0;
-	virtual int mkdir(char* dir) = 0;
-	virtual FileHandle* open(char* dir, int mode) = 0;
-	
-	int get_type();
+	virtual int read(char* buffer, int n) = 0;
+	virtual int write(char* buffer, int n) = 0;
+	virtual int tell() = 0;
+	virtual void flush() = 0;
+	virtual void close() = 0;
+	int write(char* str);
 };
 
 class VoidTerminal: public Terminal{
@@ -96,6 +88,7 @@ public:
 };
 
 #include "graphics_drivers.h"
+#include "../fs/fs.h"
 
 void set_primary_terminal(Terminal* term);
 void set_root_fs(FileSystem* fs);

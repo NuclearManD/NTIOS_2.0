@@ -169,17 +169,8 @@ int Keyboard::get_type(){
  * FILE HANDLE
  */
 
-void FileHandle::write(char* str){
-	this->write(str, len(str));
-}
-
-/*
- * FILE SYSTEM
- */
-
-
-int FileSystem::get_type(){
-	return DRIVER_TYPE_FS;
+int FileHandle::write(char* str){
+	return this->write(str, len(str));
 }
 
 /*

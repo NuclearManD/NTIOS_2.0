@@ -18,6 +18,11 @@ void postinit_platform_drivers(){
 }
 
 
+int freeRam() {
+	return 512*1024L*1024L;
+}
+
+
 /**
 	* C++ version 0.4 char* style "itoa":
 	* Written by Lukás Chmela
