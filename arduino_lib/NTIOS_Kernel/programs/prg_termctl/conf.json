@@ -1,0 +1,6 @@
+{
+	"include":"main.c",
+	"entry":"termctl_main",
+	"init":"termctl_init",
+	"cmd":"termctl"
+}

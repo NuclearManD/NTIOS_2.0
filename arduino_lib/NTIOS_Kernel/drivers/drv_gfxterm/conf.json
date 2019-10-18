@@ -1,0 +1,8 @@
+{
+	"path":"term0",
+	"type":"term",
+	"name":"term0",
+	"postinit":"term0.term_postinit",
+	"include":"main.cpp",
+	"disabled":true
+}

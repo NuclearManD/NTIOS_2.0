@@ -1,0 +1,7 @@
+{
+	"include":"main.c",
+	"entry":"man_main",
+	"init":"man_init",
+	"cmd":"man",
+	"disabled":false
+}

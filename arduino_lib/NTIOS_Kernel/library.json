@@ -1,0 +1,15 @@
+{
+    "name": "NTIOS",
+    "description": "NTIOS - uC OS",
+    "keywords": "OS, NTIOS",
+    "authors": [
+        {
+            "name": "Dylan Brophy"
+        }
+    ],
+    "version": "1.0",
+    "frameworks": "Arduino",
+    "examples": [
+        "examples/*/*.ino"
+    ]
+}
