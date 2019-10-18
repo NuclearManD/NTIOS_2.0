@@ -13,6 +13,7 @@ This file serves to add commands to the system dynamically.
 #include "prg_gpio/prg_gpio.c"
 #include "prg_fsr/main.c"
 
+extern int arduino_exec_pgm(char** argv, int argc);
 
 int execute_program(char** argv, int argc){
 	char* cmd = argv[0];
@@ -29,8 +30,7 @@ int execute_program(char** argv, int argc){
 	}else 	if(!strcmp(cmd, "fsr")){
 		return fsr_main(argv, argc);
 	}else {
-		stde("Not a command:");
-		stde(argv[0]);
+		arduino_exec_pgm(argv, argc);
 	}
 	return -1;
 }
