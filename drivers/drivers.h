@@ -67,17 +67,6 @@ public:
 	int write(char* str);
 };
 
-class FileSystem{
-public:
-	virtual char* ls(char* dir, int index) = 0;
-	virtual bool isfile(char* dir) = 0;
-	virtual bool exists(char* dir) = 0;
-	virtual int mkdir(char* dir) = 0;
-	virtual FileHandle* open(char* dir, int mode) = 0;
-	
-	int get_type();
-};
-
 class VoidTerminal: public Terminal{
 public:
 	void stdo(char* d);
@@ -99,6 +88,7 @@ public:
 };
 
 #include "graphics_drivers.h"
+#include "../fs/fs.h"
 
 void set_primary_terminal(Terminal* term);
 void set_root_fs(FileSystem* fs);

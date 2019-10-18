@@ -1,4 +1,7 @@
+#include "fs.h"
+
 #include "tmpfs.c"
+
 
 
 FileSystem** mount_fs;
@@ -120,6 +123,22 @@ int get_mount_root(char* path){
 	return -1;
 }
 
+FileSystem* opendir(char* dir){
+	if(!strcmp(dir, "/"))return 0;
+	
+	char buffer[len(dir)+curdir_len+1];
+	fs_resolve(buffer, dir);
+	
+	int mount_point = get_mount_root(buffer);
+	if(mount_point == -1)return 0;
+	
+	// it does exist: it's a mounted filesystem
+	if(dirrootcmp(mount_path[mount_point], buffer))return mount_fs[mount_point];
+	
+	// adding length of mount point gets the path relative to the mounted file system
+	return mount_fs[mount_point]->opendir(buffer+len(mount_path[mount_point]));
+}
+
 bool exists(char* path){
 	if(!strcmp(path, "/"))return true;
 	
@@ -200,5 +219,5 @@ FileHandle* fopen(char* path, int mode){
 	int mount_point = get_mount_root(buffer);
 	if(mount_point == -1)return 0;
 	
-	return mount_fs[mount_point]->open(buffer+len(mount_path[mount_point])+1, mode);
+	return mount_fs[mount_point]->fopen(buffer+len(mount_path[mount_point])+1, mode);
 }

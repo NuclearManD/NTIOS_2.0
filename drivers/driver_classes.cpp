@@ -174,15 +174,6 @@ int FileHandle::write(char* str){
 }
 
 /*
- * FILE SYSTEM
- */
-
-
-int FileSystem::get_type(){
-	return DRIVER_TYPE_FS;
-}
-
-/*
  * 
  * VOID TERMINAL
  * 
